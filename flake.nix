@@ -22,7 +22,8 @@
       cmakeVersion = "3.22.1";
 
       androidComposition = pkgs.androidenv.composeAndroidPackages {
-        platformVersions = [ "35" "36" ];
+        # 34: firebase_* plugins compile against it.
+        platformVersions = [ "34" "35" "36" ];
         buildToolsVersions = [ "35.0.0" buildToolsVersion ];
         includeNDK = true;
         ndkVersions = [ ndkVersion ];

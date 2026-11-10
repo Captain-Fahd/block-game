@@ -6,6 +6,7 @@ environment:
 
 workspace:
   - packages/game_core
+  - packages/game_core/example
   - apps/block_puzzle
 
 dev_dependencies:

@@ -1,0 +1,126 @@
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
+
+import 'logger.dart';
+
+/// UMP consent (GDPR / US state privacy messages).
+abstract class ConsentService {
+  /// Requests a consent info update and shows the form if required. Call on
+  /// every launch. Never throws and never hangs longer than its timeout, so
+  /// an offline launch carries on.
+  Future<void> gather();
+
+  /// Whether ads may be requested (from this or a previous session).
+  bool get canRequestAds;
+
+  /// Whether Settings must show a "Privacy options" entry.
+  bool get privacyOptionsRequired;
+
+  Future<void> showPrivacyOptionsForm();
+}
+
+class UmpConsentService implements ConsentService {
+  UmpConsentService({
+    this.debugGeographyEea = false,
+    this.testDeviceIds = const [],
+    this.timeout = const Duration(seconds: 8),
+  });
+
+  /// Debug builds only: pretend the device is in the EEA to test the form.
+  final bool debugGeographyEea;
+  final List<String> testDeviceIds;
+  final Duration timeout;
+  final _log = Logger('consent');
+
+  bool _canRequestAds = false;
+  bool _privacyOptionsRequired = false;
+
+  @override
+  bool get canRequestAds => _canRequestAds;
+  @override
+  bool get privacyOptionsRequired => _privacyOptionsRequired;
+
+  ConsentRequestParameters _params() {
+    if (kReleaseMode) return ConsentRequestParameters();
+    return ConsentRequestParameters(
+      consentDebugSettings: ConsentDebugSettings(
+        debugGeography: debugGeographyEea
+            ? DebugGeography.debugGeographyEea
+            : DebugGeography.debugGeographyDisabled,
+        testIdentifiers: testDeviceIds,
+      ),
+    );
+  }
+
+  @override
+  Future<void> gather() async {
+    final info = ConsentInformation.instance;
+    final done = Completer<void>();
+    info.requestConsentInfoUpdate(
+      _params(),
+      () {
+        ConsentForm.loadAndShowConsentFormIfRequired((FormError? error) {
+          if (error != null) _log.warning('form: ${error.message}');
+          if (!done.isCompleted) done.complete();
+        });
+      },
+      (FormError error) {
+        _log.warning('info update failed: ${error.message}');
+        if (!done.isCompleted) done.complete();
+      },
+    );
+    try {
+      await done.future.timeout(timeout);
+    } on TimeoutException {
+      _log.warning('consent timed out');
+    }
+    await _refresh();
+  }
+
+  Future<void> _refresh() async {
+    try {
+      final info = ConsentInformation.instance;
+      _canRequestAds = await info.canRequestAds();
+      _privacyOptionsRequired =
+          await info.getPrivacyOptionsRequirementStatus() ==
+          PrivacyOptionsRequirementStatus.required;
+    } on Object catch (e) {
+      _log.warning('consent status failed', e);
+    }
+  }
+
+  @override
+  Future<void> showPrivacyOptionsForm() async {
+    final done = Completer<void>();
+    await ConsentForm.showPrivacyOptionsForm((FormError? error) {
+      if (error != null) _log.warning('privacy form: ${error.message}');
+      done.complete();
+    });
+    await done.future;
+    await _refresh();
+  }
+
+  /// Debug helper: forget consent so the form shows again.
+  Future<void> resetForTesting() => ConsentInformation.instance.reset();
+}
+
+class FakeConsentService implements ConsentService {
+  FakeConsentService({
+    this.canRequestAds = true,
+    this.privacyOptionsRequired = false,
+  });
+
+  @override
+  bool canRequestAds;
+  @override
+  bool privacyOptionsRequired;
+  int gatherCalls = 0;
+  int privacyFormShows = 0;
+
+  @override
+  Future<void> gather() async => gatherCalls++;
+  @override
+  Future<void> showPrivacyOptionsForm() async => privacyFormShows++;
+}
