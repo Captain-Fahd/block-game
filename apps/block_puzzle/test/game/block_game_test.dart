@@ -365,6 +365,25 @@ void main() {
   });
 
   testWithGame<BlockGame>(
+    'HUD shows a resumed game\'s score, best and streak before any move',
+    () => _Harness(
+      best: 1200,
+      controller: GameController.fromState(
+        controllerWith(score: 840).state
+            .copyWith(streak: (streak: 2, missesSinceClear: 0)),
+      ),
+    ).game,
+    (game) async {
+      game.onGameResize(size);
+      await game.ready();
+      final texts = game.hud.children.whereType<TextComponent>().map(
+        (t) => t.text,
+      );
+      expect(texts, containsAll(['840', 'Best 1200', 'Streak x3']));
+    },
+  );
+
+  testWithGame<BlockGame>(
     'colour-blind setting re-renders the sprites',
     () => _Harness(colourBlind: _cb = ValueNotifier(false)).game,
     (game) async {

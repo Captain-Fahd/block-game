@@ -13,6 +13,10 @@ class HudComponent extends PositionComponent with HasGameReference<BlockGame> {
   late final TextComponent _best;
   late final TextComponent _streak;
 
+  /// Set at the end of [onLoad]; `isLoaded` is still false inside onLoad,
+  /// so it can't guard the first refresh.
+  bool _ready = false;
+
   static TextPaint _paint(double size, Color colour, FontWeight w) => TextPaint(
     style: TextStyle(
       fontFamily: kGameFontFamily,
@@ -40,6 +44,7 @@ class HudComponent extends PositionComponent with HasGameReference<BlockGame> {
       textRenderer: _paint(20, GameColors.accent, FontWeight.w900),
     );
     addAll([_score, _best, _streak]);
+    _ready = true;
     refresh(animate: false);
   }
 
@@ -50,14 +55,14 @@ class HudComponent extends PositionComponent with HasGameReference<BlockGame> {
     final board = game.layout.board;
     position = Vector2(hud.left, hud.top);
     this.size = Vector2(hud.width, hud.height);
-    if (!isLoaded) return;
+    if (!_ready) return;
     _score.position = Vector2(hud.width / 2, hud.height * 0.5);
     _best.position = Vector2(board.left - hud.left, hud.height * 0.08);
     _streak.position = Vector2(hud.width / 2, hud.height * 0.86);
   }
 
   void refresh({required bool animate, bool streakUp = false}) {
-    if (!isLoaded) return;
+    if (!_ready) return;
     final s = game.controller.state;
     _score.text = '${s.score}';
     final best = s.score > game.best ? s.score : game.best;
