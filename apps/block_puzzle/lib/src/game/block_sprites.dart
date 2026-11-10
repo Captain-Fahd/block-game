@@ -15,13 +15,10 @@ void paintBlock(
 }) {
   final s = rect.width;
   final r = Radius.circular(s * 0.2);
-  final edge = HSLColor.fromColor(colour);
-  final dark = edge
-      .withLightness((edge.lightness * 0.68).clamp(0.0, 1.0))
-      .toColor();
-  final light = edge
-      .withLightness((edge.lightness + (1 - edge.lightness) * 0.45))
-      .toColor();
+  // Blend towards black/white rather than shifting HSL lightness, which
+  // over-saturates violets and reds.
+  final dark = Color.lerp(colour, const Color(0xFF000000), 0.3)!;
+  final light = Color.lerp(colour, const Color(0xFFFFFFFF), 0.45)!;
 
   // Darker bottom edge, then the face sitting on top of it.
   canvas.drawRRect(RRect.fromRectAndRadius(rect, r), Paint()..color = dark);

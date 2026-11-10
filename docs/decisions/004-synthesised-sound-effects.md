@@ -1,0 +1,20 @@
+# 004. Synthesised sound effects instead of Kenney packs
+
+Date: 2026-11-11
+Status: accepted (Omar can reverse it after playtesting)
+
+## Context
+The Phase 2 spec says the sounds (place, clear, invalid drop, game over, new best) come from Kenney's CC0 interface/UI packs. CLAUDE.md allows code-drawn assets or CC0/OFL assets with credits.
+
+## Decision
+Generate the five effects in code with `apps/block_puzzle/tool/make_sfx.dart`. It writes small 16-bit mono 22.05 kHz WAVs to `assets/audio/`:
+- place: short falling "tock" with a tiny click.
+- clear: two-note chime (root plus a fifth). The game raises its playback rate by `kClearPitchStep` per streak step, up to `kClearPitchMax`.
+- invalid: two soft low pulses.
+- game over: three falling notes.
+- new best: a rising four-note arpeggio.
+
+## Consequences
+- No third-party audio files, so there are no licences or credits to track for sound, and the sounds are original by construction.
+- The sounds are easy to tune: change the generator and re-run it. The output is committed so builds don't depend on running the tool.
+- They will sound simpler than a professional pack. If Omar's playtest feedback (Phase 4 acceptance) says so, switch to Kenney CC0 files. That only changes the file names in `lib/src/game/sfx.dart` and adds a credits entry.

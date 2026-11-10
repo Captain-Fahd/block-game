@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:game_core/game_core.dart';
 
+import 'src/game/autoplay.dart';
 import 'src/game/block_game.dart';
 import 'src/game/sfx.dart';
 import 'src/model/game_controller.dart';
@@ -73,6 +74,14 @@ class _BlockPuzzleAppState extends State<BlockPuzzleApp>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    if (kAutoplay) {
+      _game.add(Autoplay());
+      FrameStats(
+        extra: () =>
+            'components ${_game.descendants().length}, '
+            'play children ${_game.play.children.length}',
+      ).start();
+    }
   }
 
   @override
@@ -86,6 +95,7 @@ class _BlockPuzzleAppState extends State<BlockPuzzleApp>
       widget.audio.onLifecycle(state);
 
   void _onGameOver(BlockGame game) {
+    if (kAutoplay) return;
     final score = game.controller.state.score;
     if (score > widget.store.getIntOr(_kBestClassic, 0)) {
       widget.store.setInt(_kBestClassic, score);
