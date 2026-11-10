@@ -196,12 +196,12 @@ Save the full game state (board, tray, score, streak, RNG state, mode) on every 
 
 ## Phase 4 — Block puzzle: rendering and input (Flame)
 
-- [ ] **P4.1** `FlameGame` subclass hosting board and tray components; scales to screen width with safe-area insets; works from small phones (360 dp wide) to tablets (letterboxed).
-- [ ] **P4.2** Block rendering per the feel spec, cached to `Picture`/`Image` per colour for performance.
-- [ ] **P4.3** Drag-and-drop with lift, finger offset, ghost preview, snap or return.
-- [ ] **P4.4** Clear animation, particles, floating score, screen shake, streak indicator.
-- [ ] **P4.5** Audio and haptics hooks through `game_core`.
-- [ ] **P4.6** Golden tests for board states (empty, mid-game, ghost valid, ghost invalid, colour-blind mode).
+- [x] **P4.1** `FlameGame` subclass hosting board and tray components; scales to screen width with safe-area insets; works from small phones (360 dp wide) to tablets (letterboxed).
+- [x] **P4.2** Block rendering per the feel spec, cached to `Picture`/`Image` per colour for performance.
+- [x] **P4.3** Drag-and-drop with lift, finger offset, ghost preview, snap or return.
+- [x] **P4.4** Clear animation, particles, floating score, screen shake, streak indicator.
+- [x] **P4.5** Audio and haptics hooks through `game_core`.
+- [x] **P4.6** Golden tests for board states (empty, mid-game, ghost valid, ghost invalid, colour-blind mode).
 - [ ] **P4.7 Performance.** Profile on the real device: steady 60 fps during clears; no jank on first clear (pre-warm particles and shaders).
 
 **Acceptance:** a full Classic game is playable on a device start to game over; [OMAR] plays 5 games and gives feedback on feel, which Claude Code applies before moving on.
