@@ -372,6 +372,8 @@ class PlayArea extends PositionComponent {
   double _amplitude = 0;
   final _rand = math.Random();
 
+  bool get isShaking => _shakeLeft > 0;
+
   void shake(double amplitude) {
     _amplitude = amplitude;
     _shakeLeft = kShakeDuration;
