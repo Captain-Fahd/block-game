@@ -1,0 +1,45 @@
+# --- Flutter / Dart ---
+.dart_tool/
+.packages
+.pub-cache/
+.pub/
+build/
+coverage/
+.flutter-plugins
+.flutter-plugins-dependencies
+*.iml
+.idea/
+.vscode/
+*.log
+pubspec_overrides.yaml
+
+# --- Android ---
+**/android/.gradle/
+**/android/local.properties
+**/android/captures/
+**/android/gradlew
+**/android/gradlew.bat
+**/android/gradle/wrapper/gradle-wrapper.jar
+**/android/app/debug/
+**/android/app/profile/
+**/android/app/release/
+**/android/.kotlin/
+*.apk
+*.aab
+
+# --- Nix ---
+result
+result-*
+.direnv/
+
+# --- Secrets (never commit) ---
+**/env/*.json
+!**/env/example.json
+**/android/key.properties
+*.jks
+*.keystore
+**/google-services.json
+**/GoogleService-Info.plist
+**/firebase_options.dart
+.env
+.env.*

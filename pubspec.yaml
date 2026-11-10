@@ -1,0 +1,12 @@
+name: f2p_workspace
+publish_to: none
+
+environment:
+  sdk: ^3.13.0
+
+workspace:
+  - packages/game_core
+  - apps/block_puzzle
+
+dev_dependencies:
+  flutter_lints: ^6.0.0
