@@ -86,3 +86,79 @@ const List<ScoreBand> kScoreBands = [
 
 /// Number of distinct block colours (matches the theme palette).
 const int kColourCount = 8;
+
+// --- Layout (logical pixels unless noted) --------------------------------
+/// Widest the play area gets; wider screens (tablets) are letterboxed.
+const double kMaxPlayWidth = 520;
+
+/// Horizontal margin around the board.
+const double kPlayMargin = 16;
+
+/// Height reserved above the board for score, best and streak.
+const double kHudHeight = 112;
+
+/// Gap between the board and the tray, in board cells.
+const double kTrayGapCells = 0.6;
+
+/// Height of the tray area, in board cells.
+const double kTrayHeightCells = 3.4;
+
+/// Tray pieces are drawn at this fraction of the board cell size.
+const double kTrayCellScale = 0.55;
+
+/// Board well padding around the grid, in board cells.
+const double kBoardPaddingCells = 0.12;
+
+/// Gap between neighbouring blocks, as a fraction of a cell.
+const double kBlockGapFraction = 0.06;
+
+// --- Drag and drop -------------------------------------------------------
+/// While dragging, a piece is drawn at board cell size times this. The tray
+/// shows pieces smaller (kTrayCellScale), so lifting reads as a scale-up.
+const double kDragCellScale = 1.0;
+
+/// Gap between the finger and the bottom edge of a dragged piece, in cells,
+/// so the finger doesn't cover it.
+const double kDragFingerOffsetCells = 1.5;
+
+/// How far (in cells) a dragged piece may be from a cell and still snap.
+const double kSnapThresholdCells = 0.5;
+
+/// Seconds for a lifted piece to scale up / a dropped piece to fly home.
+const double kLiftDuration = 0.08;
+const double kReturnDuration = 0.18;
+
+/// Seconds for a newly dealt tray piece to pop in.
+const double kDealDuration = 0.22;
+
+// --- Clear feedback ------------------------------------------------------
+const double kClearFlashDuration = 0.10;
+const double kClearShrinkDuration = 0.22;
+const int kParticlesPerCell = 5;
+const double kParticleLifespan = 0.55;
+
+/// Particle launch speed and gravity, in cells per second (squared).
+const double kParticleSpeedCells = 6;
+const double kParticleGravityCells = 18;
+
+/// Screen shake when at least this many lines clear at once.
+const int kShakeMinLines = 3;
+const double kShakeDuration = 0.28;
+
+/// Peak shake offset, in cells.
+const double kShakeAmplitudeCells = 0.12;
+
+const double kFloatingScoreDuration = 0.9;
+
+/// How far the floating score text rises, in cells.
+const double kFloatingScoreRiseCells = 1.4;
+const double kStreakPulseScale = 1.35;
+const double kStreakPulseDuration = 0.25;
+
+/// Delay before the game-over callback, so the last animation can finish.
+const double kGameOverDelay = 0.6;
+
+// --- Sound and haptics ---------------------------------------------------
+/// Clear sound pitch rises by this much per streak step, up to the cap.
+const double kClearPitchStep = 0.06;
+const double kClearPitchMax = 1.6;
