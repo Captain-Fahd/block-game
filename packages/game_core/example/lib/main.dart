@@ -56,7 +56,11 @@ class _CheckScreenState extends State<CheckScreen> {
       'privacyOptionsRequired=${_consent.privacyOptionsRequired}',
     );
     await _ads.initialize();
-    _add('Ads initialised (test ids: ${_ids.isTest})');
+    _add(
+      _consent.canRequestAds
+          ? 'Ads initialised (test ids: ${_ids.isTest})'
+          : 'Ads not initialised: consent does not allow requests',
+    );
   }
 
   Future<void> _interstitial() async {

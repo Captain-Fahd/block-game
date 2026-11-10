@@ -8,8 +8,9 @@ import 'logger.dart';
 /// UMP consent (GDPR / US state privacy messages).
 abstract class ConsentService {
   /// Requests a consent info update and shows the form if required. Call on
-  /// every launch. Never throws and never hangs longer than its timeout, so
-  /// an offline launch carries on.
+  /// every launch. Never throws. The network request is time-limited, so an
+  /// offline launch carries on; if a form is shown, this completes when the
+  /// player dismisses it.
   Future<void> gather();
 
   /// Whether ads may be requested (from this or a previous session).
@@ -56,25 +57,35 @@ class UmpConsentService implements ConsentService {
 
   @override
   Future<void> gather() async {
-    final info = ConsentInformation.instance;
-    final done = Completer<void>();
-    info.requestConsentInfoUpdate(
+    // Only the network round-trip is time-limited. Once the form is on
+    // screen we wait for the player however long they take; timing out
+    // there would read stale status and skip ads for the whole session.
+    final infoUpdated = Completer<bool>();
+    ConsentInformation.instance.requestConsentInfoUpdate(
       _params(),
       () {
-        ConsentForm.loadAndShowConsentFormIfRequired((FormError? error) {
-          if (error != null) _log.warning('form: ${error.message}');
-          if (!done.isCompleted) done.complete();
-        });
+        if (!infoUpdated.isCompleted) infoUpdated.complete(true);
       },
       (FormError error) {
         _log.warning('info update failed: ${error.message}');
-        if (!done.isCompleted) done.complete();
+        if (!infoUpdated.isCompleted) infoUpdated.complete(false);
       },
     );
+    final bool updated;
     try {
-      await done.future.timeout(timeout);
+      updated = await infoUpdated.future.timeout(timeout);
     } on TimeoutException {
-      _log.warning('consent timed out');
+      _log.warning('consent info update timed out');
+      await _refresh();
+      return;
+    }
+    if (updated) {
+      final formDone = Completer<void>();
+      ConsentForm.loadAndShowConsentFormIfRequired((FormError? error) {
+        if (error != null) _log.warning('form: ${error.message}');
+        if (!formDone.isCompleted) formDone.complete();
+      });
+      await formDone.future;
     }
     await _refresh();
   }

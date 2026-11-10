@@ -67,7 +67,7 @@ f2p-games/
 - [ ] **P0.6** Create the Google Play Console developer account (US$25) and complete identity verification. Allow up to a few days.
 - [ ] **P0.7** Create an AdMob account and link a Google payments profile (W-8BEN tax info, AUD bank account).
 - [ ] **P0.8** Create a Firebase project for game 1 (Analytics + Crashlytics).
-- [ ] **P0.9** Have an Android phone available with USB debugging enabled. The emulator is fine for development, but ads, haptics and performance must be checked on a real device.
+- [x] **P0.9** Have an Android phone available with USB debugging enabled. The emulator is fine for development, but ads, haptics and performance must be checked on a real device.
 
 **Acceptance:** `nix develop` → `flutter doctor` clean; a debug APK runs on a device; repo pushed with CI green.
 
@@ -77,13 +77,13 @@ f2p-games/
 
 Everything here is reused by every game. Each service sits behind an abstract interface with a fake implementation for tests.
 
-- [ ] **P1.1 Logger.** Thin wrapper (levels, tag). No output in release except errors, which go to Crashlytics.
-- [ ] **P1.2 Storage.** `KeyValueStore` interface over `shared_preferences`; typed helpers for int/bool/string/JSON; in-memory fake.
-- [ ] **P1.3 Settings.** Sound, music, haptics, colour-blind patterns; persisted; exposed as `ValueNotifier`s.
+- [x] **P1.1 Logger.** Thin wrapper (levels, tag). No output in release except errors, which go to Crashlytics.
+- [x] **P1.2 Storage.** `KeyValueStore` interface over `shared_preferences`; typed helpers for int/bool/string/JSON; in-memory fake.
+- [x] **P1.3 Settings.** Sound, music, haptics, colour-blind patterns; persisted; exposed as `ValueNotifier`s.
 - [ ] **P1.4 Audio.** `flame_audio` wrapper: preload SFX, play by enum id, respects settings, ducks when the app pauses.
 - [ ] **P1.5 Haptics.** Light/medium/success patterns via `HapticFeedback`; respects settings.
-- [ ] **P1.6 Consent.** UMP flow via `google_mobile_ads`'s `ConsentInformation`/`ConsentForm`: request info update on every launch, show form if required, expose `canRequestAds` and `privacyOptionsRequired`, and provide `showPrivacyOptionsForm()`. Debug builds support UMP debug geography (EEA) for testing.
-- [ ] **P1.7 Ads service.** `AdsService` interface with `AdMobAdsService` and `FakeAdsService`.
+- [x] **P1.6 Consent.** UMP flow via `google_mobile_ads`'s `ConsentInformation`/`ConsentForm`: request info update on every launch, show form if required, expose `canRequestAds` and `privacyOptionsRequired`, and provide `showPrivacyOptionsForm()`. Debug builds support UMP debug geography (EEA) for testing.
+- [x] **P1.7 Ads service.** `AdsService` interface with `AdMobAdsService` and `FakeAdsService`.
   - Initialise the Mobile Ads SDK only after consent says ads can be requested.
   - Interstitial: preload, `maybeShowInterstitial(trigger)` applies caps from a passed-in `AdPolicy` (min seconds between shows, min games before first show, min game duration), reloads after show, swallows no-fill.
   - Rewarded: preload, `showRewarded()` returns `Future<bool>` (true only on earned reward), `isRewardedReady` notifier so the UI can hide or disable the offer.
@@ -92,9 +92,9 @@ Everything here is reused by every game. Each service sits behind an abstract in
   - Unit test the cap logic with a fake clock.
 - [ ] **P1.8 Analytics.** `Analytics` interface with Firebase and no-op implementations. Event names as constants: `game_start`, `game_end` (score, duration, moves, cause), `level_clear`/`line_clear`, `ad_interstitial_shown`, `ad_rewarded_offered`, `ad_rewarded_completed`, `tutorial_complete`, `daily_start`, `daily_end`. No personal data in parameters.
 - [ ] **P1.9 Crash reporting.** Crashlytics wired to `FlutterError.onError` and `PlatformDispatcher.instance.onError`; disabled in debug.
-- [ ] **P1.10 Review prompt.** `in_app_review` wrapper: ask at most once per N days, only after a positive moment (new best score, or Nth game won), never after a loss, never in the first session.
-- [ ] **P1.11 Theme.** Shared colour tokens (including a colour-blind-safe palette), typography using a bundled OFL font, button and dialog widgets with a consistent look.
-- [ ] **P1.12 House ads (stub).** Interface to show a cross-promo card for Omar's other games from a static list. Empty for game 1.
+- [x] **P1.10 Review prompt.** `in_app_review` wrapper: ask at most once per N days, only after a positive moment (new best score, or Nth game won), never after a loss, never in the first session.
+- [x] **P1.11 Theme.** Shared colour tokens (including a colour-blind-safe palette), typography using a bundled OFL font, button and dialog widgets with a consistent look.
+- [x] **P1.12 House ads (stub).** Interface to show a cross-promo card for Omar's other games from a static list. Empty for game 1.
 
 **Acceptance:** `game_core` tests pass with fakes; a small example screen in `game_core/example` shows consent → test interstitial → test rewarded on a real device.
 

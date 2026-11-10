@@ -2,6 +2,33 @@
 
 Newest entries at the top. One entry per session: what got done, what's next, blockers.
 
+## 2026-11-11
+
+### Done
+- Checked commit `1bdbf05` (Phase 1 `game_core`) against the plan: format clean, `flutter analyze` no issues, 30 `game_core` tests and 94 block puzzle tests pass, and the commit contains no secrets. Push from this shell failed (no GitHub HTTPS credentials); Omar pushes himself.
+- **Phase 1 acceptance run on a real phone** (DNP-NX9, Android API 37, connected over USB, so **P0.9 ticked**), using the `game_core/example` app:
+  - Consent with no EEA debug setting: `canRequestAds=true`, no form.
+  - Test interstitial shown and dismissed, `shown: true`.
+  - Test rewarded played to "Reward granted", `earned: true` only after the reward.
+  - EEA debug geography: the GDPR form appears, Consent gives `canRequestAds=true` and `privacyOptionsRequired=true`; the privacy options form opens from the Privacy button.
+- **Bug fixed in `UmpConsentService.gather()`.** The 8 s timeout covered the time the consent form sat on screen as well as the network request. A player who took longer than 8 s on the form was left with `canRequestAds=false`, so no ads loaded that session and the app carried on behind the form. Now only the info-update request is time-limited, and the form is awaited until it's dismissed. Reproduced on the phone before the fix (`consent timed out` while the form was showing) and checked after it (form held 14 s, then Consent → ads initialised).
+- The example app's "Ads initialised" line no longer prints when consent blocks ads.
+- **Ticked:** P1.1, P1.2, P1.3, P1.6, P1.7, P1.10, P1.11, P1.12.
+
+### Measured
+- `game_core` line coverage is 57.3% overall: 100% for logger, storage, settings, haptics, house ads, ad ids and ad policy; low for the SDK wrappers (consent 11%, AdMob service 20%, crash reporting 21%, audio 23%), which only run against the real SDKs on a device. The ≥ 90% rule applies to model code, which is still at 98.8%.
+
+### Partly done (not ticked)
+- **P1.4 Audio, P1.5 Haptics:** code and fakes are done, but neither has been tried on the phone yet. That happens in P4.5, when the game has real sounds.
+- **P1.8 Analytics, P1.9 Crash reporting:** code and no-op fakes are done; they need the Firebase project (P0.8) and `google-services.json` (P6.9) before they can be checked.
+
+### Notes
+- UMP debug geography and AdMob test ads only apply on a real phone when its **hashed device ID** is registered. Omar's phone ID is printed in logcat (`addTestDeviceHashedId(...)`). Pass it with `--dart-define=ADMOB_TEST_DEVICE_IDS=<id>` or put it in `env/test.json` (gitignored). Don't commit it.
+
+### Next
+- Phase 4 (Flame rendering and input), starting with P4.1.
+- Blocked on Omar: P0.6–P0.8 accounts, P2.0 name pick.
+
 ## 2026-11-10
 
 ### Done
