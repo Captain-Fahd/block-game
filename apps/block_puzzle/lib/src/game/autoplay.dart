@@ -36,6 +36,13 @@ class Autoplay extends Component with HasGameReference<BlockGame> {
   int _clearsLogged = 0;
 
   @override
+  void onMount() {
+    super.onMount();
+    // The bot computes exact 1:1 finger paths.
+    game.dragAcceleration = false;
+  }
+
+  @override
   void update(double dt) {
     final m = _move;
     if (m != null) {

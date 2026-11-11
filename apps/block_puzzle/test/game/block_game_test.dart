@@ -121,11 +121,69 @@ void main() {
         expect(game.ghost, (piece: piece, row: 3, col: 2, valid: true));
         game.moveDrag(fingerFor(game, piece, 7, 0));
         expect(game.ghost?.valid, isFalse);
-        // Hanging off the right edge: still a ghost, but invalid.
-        game.moveDrag(fingerFor(game, piece, 2, 6));
-        expect(game.ghost?.valid, isFalse);
+        game.cancelDrag();
+        // The 2x2 O hanging half off the bottom: a ghost, but invalid.
+        final o = game.controller.state.tray[2]!;
+        final oHome = game.slots[2].home;
+        game.startDrag(2, Offset(oHome.x, oHome.y));
+        game.moveDrag(fingerFor(game, o, 7, 3));
+        expect(game.ghost, (piece: o, row: 7, col: 3, valid: false));
         game.cancelDrag();
         expect(game.ghost, isNull);
+      },
+    );
+
+    testWithGame<BlockGame>(
+      'a dragged piece is kept on screen',
+      () => (h = _Harness()).game,
+      (game) async {
+        game.onGameResize(size);
+        await game.ready();
+        final home = game.slots[0].home;
+        game.startDrag(0, Offset(home.x, home.y));
+        game.moveDrag(const Offset(5000, -5000));
+        final v = game.drag!.view;
+        expect(v.position.x + v.size.x / 2, lessThanOrEqualTo(size.x + 1e-6));
+        expect(v.position.y - v.size.y / 2, greaterThanOrEqualTo(-1e-6));
+      },
+    );
+
+    testWithGame<BlockGame>(
+      'fast finger movement is accelerated; slow movement is 1:1',
+      () => (h = _Harness()).game,
+      (game) async {
+        game.onGameResize(size);
+        await game.ready();
+        final cell = game.layout.cell;
+        final home = game.slots[0].home;
+        final start = Offset(home.x, home.y);
+
+        // Slow: 0.1 cell per 1/60 s = 6 cells/s... use 0.02 cell per frame.
+        game.startDrag(0, start);
+        var finger = start;
+        final tl0 = game.drag!.topLeft;
+        for (var i = 0; i < 20; i++) {
+          game.update(1 / 60);
+          finger += Offset(0, -0.02 * cell);
+          game.moveDrag(finger);
+        }
+        final slowMoved = (game.drag!.topLeft - tl0).distance;
+        expect(slowMoved, closeTo(0.4 * cell, 1e-6));
+        game.cancelDrag();
+        game.update(1);
+
+        // Fast: 0.5 cell per frame = 30 cells/s, above full-gain speed.
+        game.startDrag(0, start);
+        finger = start;
+        final tl1 = game.drag!.topLeft;
+        for (var i = 0; i < 8; i++) {
+          game.update(1 / 60);
+          finger += Offset(0, -0.5 * cell);
+          game.moveDrag(finger);
+        }
+        final fastMoved = (game.drag!.topLeft - tl1).distance;
+        expect(fastMoved, greaterThan(4 * cell * 1.4));
+        expect(fastMoved, lessThanOrEqualTo(4 * cell * kDragGainMax + 1e-6));
       },
     );
 

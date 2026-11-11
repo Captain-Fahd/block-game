@@ -15,6 +15,7 @@ import 'components/board_component.dart';
 import 'components/effects.dart';
 import 'components/hud_component.dart';
 import 'components/tray.dart';
+import 'drag_gain.dart';
 import 'layout.dart';
 import 'sfx.dart';
 
@@ -23,10 +24,20 @@ typedef Ghost = ({Piece piece, int row, int col, bool valid});
 
 /// The piece currently being dragged.
 class DragState {
-  DragState(this.slot, this.view, this.finger);
+  DragState(this.slot, this.view, this.finger, this.topLeft, this.time);
   final int slot;
   final PieceView view;
+
+  /// Last finger position.
   Offset finger;
+
+  /// The piece's top-left. With acceleration it moves by the finger's
+  /// movement times [dragGain], so it can lead the finger.
+  Offset topLeft;
+
+  /// Game time of the last move, and smoothed finger speed (cells/s).
+  double time;
+  double speed = 0;
 }
 
 /// Hosts the board, tray and HUD and turns drags into model placements.
@@ -57,6 +68,13 @@ class BlockGame extends FlameGame {
   /// fits.
   final void Function(BlockGame game)? onGameOver;
   final double? _pixelRatio;
+
+  /// Speed-based drag acceleration (see [dragGain]). Autoplay turns it off
+  /// so its finger paths land exactly.
+  bool dragAcceleration = true;
+
+  /// Game clock, for finger speed.
+  double _time = 0;
 
   GameController get controller => _controller;
   GameLayout layout = GameLayout.compute(Size.zero);
@@ -184,23 +202,52 @@ class BlockGame extends FlameGame {
     if (_drag != null || _controller.isOver) return false;
     final view = slots[slot].view;
     if (view == null) return false;
-    _drag = DragState(slot, view, finger);
+    final d = _drag = DragState(
+      slot,
+      view,
+      finger,
+      pieceTopLeft(view.piece, finger),
+      _time,
+    );
     view.lift();
-    _moveView(finger);
+    _moveView(d);
     return true;
   }
 
   void moveDrag(Offset finger) {
     final d = _drag;
     if (d == null) return;
+    final delta = finger - d.finger;
     d.finger = finger;
-    _moveView(finger);
+    if (!dragAcceleration) {
+      d.topLeft = pieceTopLeft(d.view.piece, finger);
+    } else {
+      final dt = _time - d.time;
+      if (dt > 0 && layout.cell > 0) {
+        // Several events can arrive in one frame (dt == 0); those reuse
+        // the current speed estimate.
+        final instant = delta.distance / layout.cell / dt;
+        d.speed += (instant - d.speed) * kDragSpeedSmoothing;
+        d.time = _time;
+      }
+      d.topLeft += delta * dragGain(d.speed);
+    }
+    _moveView(d);
   }
 
-  void _moveView(Offset finger) {
-    final d = _drag!;
+  /// Keeps a dragged piece fully on screen.
+  Offset _clampToScreen(Piece piece, Offset tl) {
+    final w = piece.width * dragCell;
+    final h = piece.height * dragCell;
+    return Offset(
+      tl.dx.clamp(0.0, math.max(0.0, size.x - w)),
+      tl.dy.clamp(0.0, math.max(0.0, size.y - h)),
+    );
+  }
+
+  void _moveView(DragState d) {
     final piece = d.view.piece;
-    final tl = pieceTopLeft(piece, finger);
+    final tl = d.topLeft = _clampToScreen(piece, d.topLeft);
     d.view.position = Vector2(
       tl.dx + piece.width * dragCell / 2,
       tl.dy + piece.height * dragCell / 2,
@@ -250,6 +297,7 @@ class BlockGame extends FlameGame {
   @override
   void update(double dt) {
     super.update(dt);
+    _time += dt;
     final t = _gameOverIn;
     if (t != null) {
       _gameOverIn = t - dt;
