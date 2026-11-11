@@ -210,13 +210,13 @@ Save the full game state (board, tray, score, streak, RNG state, mode) on every 
 
 ## Phase 5 — Block puzzle: app shell and meta
 
-- [ ] **P5.1** Screens and navigation per the spec, using `game_core` theme widgets; `PopScope` for back handling (back from Game asks to pause/quit; back from Home exits).
-- [ ] **P5.2** Flame overlays for pause, game over and second-chance offer.
-- [ ] **P5.3** Persistence: best scores (Classic, Daily), daily streak, games played, settings, saved game.
-- [ ] **P5.4** Daily challenge mode.
-- [ ] **P5.5** Tutorial.
-- [ ] **P5.6** Settings screen including "Privacy options" (shown only when UMP requires it), privacy policy link and credits screen listing CC0/OFL assets and licences.
-- [ ] **P5.7** Widget tests for each screen; integration test that plays a scripted Classic game end to end with `FakeAdsService`.
+- [x] **P5.1** Screens and navigation per the spec, using `game_core` theme widgets; `PopScope` for back handling (back from Game asks to pause/quit; back from Home exits).
+- [x] **P5.2** Flame overlays for pause, game over and second-chance offer.
+- [x] **P5.3** Persistence: best scores (Classic, Daily), daily streak, games played, settings, saved game.
+- [x] **P5.4** Daily challenge mode.
+- [x] **P5.5** Tutorial.
+- [x] **P5.6** Settings screen including "Privacy options" (shown only when UMP requires it), privacy policy link and credits screen listing CC0/OFL assets and licences.
+- [x] **P5.7** Widget tests for each screen; integration test that plays a scripted Classic game end to end with `FakeAdsService`.
 
 **Acceptance:** all flows work offline; airplane-mode launch doesn't hang on consent or ads.
 

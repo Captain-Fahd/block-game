@@ -2,6 +2,41 @@
 
 Newest entries at the top. One entry per session: what got done, what's next, blockers.
 
+## 2026-11-11 (Phase 5)
+
+### Done
+- **Phase 4 acceptance:** Omar playtested over three rounds of feedback (drag acceleration, line-clear preview, tolerant snapping plus grid haptics, gentler acceleration) and signed off ("feels good now").
+- **P5.3 Persistence:** `ProgressStore` handles best scores per mode, today's daily best, games played, the daily streak (consecutive days, kept the next day, reset after a missed day; a daily that ends after midnight counts for its seeded date), the tutorial flag, and one saved game per mode (finished, corrupt, wrong-schema, wrong-mode and stale-daily saves are discarded). The game saves after every placement and when the app is backgrounded. Settings were already persisted by `game_core`.
+- **P5.1 Screens:**
+  - Home: Play, or Continue (with score) plus New game; Daily challenge or Continue daily; best, today's best and streak; Settings.
+  - Game: pause button.
+  - Results: score, best, new-best badge, daily streak, Play again, Home.
+  - Back from Game pauses (never leaves mid-game); back from Home exits.
+- **P5.2 Overlays:** Pause (Resume / Restart / Home) and game over ("No moves left", plus the second-chance offer only when a rewarded ad is ready, then Results). Coming back from the background shows Pause.
+- **P5.4 Daily:** today's seed, separate bests, streak, resume of today's daily only.
+- **P5.5 Tutorial:** 3 scripted steps (place a block, fill a row, fill a column) with pulsing target outlines. One piece at a time (other tray slots hidden, so no refill), a miss resets the step, skippable. Logs `tutorial_complete` with a skipped flag. No HUD and no ads.
+- **P5.6 Settings:**
+  - Sound, music, vibration, colour-blind patterns.
+  - Privacy options (only when UMP says they're required).
+  - Privacy policy link (only when `PRIVACY_POLICY_URL` is set).
+  - How to play, credits and licences (Nunito OFL registered from `game_core`), version.
+- **P5.7 Tests:** widget tests for every screen and flow (21), and an on-device integration test that plays a whole scripted Classic game end to end with `FakeAdsService` (passes on the API 36 emulator: 14 moves, score 87).
+- **Acceptance (offline):** on the emulator in airplane mode, a cold launch reached Home in about 2 s (debug build); the consent request failed cleanly in the background and play was unaffected.
+- Startup: consent is gathered after the first frame and never awaited before UI; ads initialise only after consent. Ads stay `FakeAdsService` with no rewarded ad ready until P6.1, so no second-chance offer appears yet (per spec). Analytics events fire through `NoopAnalytics` until P6.4.
+- NixOS: Gradle 9 rejected the read-only `:integration_test` SDK plugin project. `settings.gradle.kts` now uses a writable copy (ADR 001 addendum).
+
+### Measured
+- Tests: 174 block puzzle (model, layout, game, goldens, data, UI) plus 1 integration, and 30 `game_core`. Model line coverage 99.4%; whole app 91.0%.
+
+### Notes and decisions
+- One saved game per mode (the spec said "a saved game"); a saved Daily is only resumable on its own date.
+- "Music" is in Settings per spec, but there's no music track yet, so it currently does nothing.
+- The app title is the working title "Block Puzzle" until P2.0.
+
+### Next
+- Phase 6: wire AdMob (P6.1), rewarded second chance (P6.2), capped interstitials on Results (P6.3), Firebase analytics and Crashlytics (P6.4/6.5), review prompt (P6.6).
+- Blocked on Omar: P0.6–P0.8 accounts, P6.8 AdMob units and consent messages, P6.9 `google-services.json`, and P2.0 name pick.
+
 ## 2026-11-11 (Phase 4)
 
 ### Done
