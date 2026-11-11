@@ -17,6 +17,11 @@ import 'block_game.dart';
 /// frame times. Never active in release builds.
 const bool kAutoplay = bool.fromEnvironment('AUTOPLAY') && !kReleaseMode;
 
+/// With autoplay, stop at game over and let the normal game-over flow run
+/// (second chance, Results, interstitial) instead of restarting, for
+/// on-device ad checks.
+const bool kAutoplayFlow = kAutoplay && bool.fromEnvironment('AUTOPLAY_FLOW');
+
 /// With autoplay, also turn sound off (to isolate audio cost when
 /// profiling).
 const bool kAutoplayMute = kAutoplay && bool.fromEnvironment('AUTOPLAY_MUTE');
@@ -66,6 +71,7 @@ class Autoplay extends Component with HasGameReference<BlockGame> {
     _wait -= dt;
     if (_wait > 0) return;
     if (game.controller.isOver) {
+      if (kAutoplayFlow) return;
       _games++;
       game.startGame(
         GameController.newGame(mode: GameMode.classic, seed: 1000 + _games),

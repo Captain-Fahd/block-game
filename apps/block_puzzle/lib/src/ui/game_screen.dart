@@ -64,7 +64,9 @@ class GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
       onPlacement: _onPlacement,
       onGameOver: (_) => _onGameOver(),
     );
-    if (kAutoplay) game.add(Autoplay());
+    // In flow mode the bot plays slower so games pass the 30 s interstitial
+    // minimum.
+    if (kAutoplay) game.add(Autoplay(pause: kAutoplayFlow ? 1.0 : 0.35));
     _played.start();
     final fresh = widget.controller.state.placements == 0;
     if (fresh) {
@@ -151,7 +153,8 @@ class GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
   // --- Game over -------------------------------------------------------------
 
   void _onGameOver() {
-    if (kAutoplay) return; // the bot starts the next game itself
+    // Plain autoplay restarts by itself; AUTOPLAY_FLOW runs the real flow.
+    if (kAutoplay && !kAutoplayFlow) return;
     final c = game.controller;
     final offer = c.canUseSecondChance && _s.ads.isRewardedReady.value;
     if (offer) {

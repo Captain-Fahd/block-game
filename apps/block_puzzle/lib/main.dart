@@ -69,20 +69,18 @@ Future<void> main() async {
     openUrl: (uri) => launchUrl(uri, mode: LaunchMode.externalApplication),
   );
 
-  if (kAutoplay) {
-    FrameStats().start();
-    runApp(
-      BlockPuzzleApp(
-        services: services,
-        home: Builder(
-          builder: (context) => GameScreen.newGame(services, GameMode.classic),
-        ),
-      ),
-    );
-    return;
-  }
-
-  runApp(BlockPuzzleApp(services: services));
+  if (kAutoplay) FrameStats().start();
+  runApp(
+    BlockPuzzleApp(
+      services: services,
+      // Autoplay (debug/profile only) goes straight into a game.
+      home: kAutoplay
+          ? Builder(
+              builder: (_) => GameScreen.newGame(services, GameMode.classic),
+            )
+          : null,
+    ),
+  );
 
   // Consent after the first frame and never awaited before UI, so an
   // offline launch can't hang on it. Ads initialise only if consent allows.
