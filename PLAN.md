@@ -106,7 +106,7 @@ Classic placement block puzzle. Original name and visuals — no borrowing from 
 
 ### P2.0 Naming [Claude Code proposes, OMAR picks]
 
-- [ ] Propose 8 names. Each must contain a searchable term ("block puzzle", "blocks") in the store title, not match an existing game's name, and have a free `.com` or at least no obvious trademark clash. Omar picks one. Package id: `com.<omar's chosen prefix>.<name>`.
+- [x] Propose 8 names. Each must contain a searchable term ("block puzzle", "blocks") in the store title, not match an existing game's name, and have a free `.com` or at least no obvious trademark clash. Omar picks one. Package id: `com.<omar's chosen prefix>.<name>`.
 
 ### Rules
 

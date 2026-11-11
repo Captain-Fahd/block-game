@@ -7,8 +7,9 @@ import '../model/game_state.dart';
 import 'game_screen.dart';
 import 'settings_screen.dart';
 
-/// Working title until Omar picks a name (P2.0).
-const String kAppTitle = 'Block Puzzle';
+/// The game's name (P2.0, ADR 008). Store title: "Lantern Blocks: Block
+/// Puzzle".
+const String kAppTitle = 'Lantern Blocks';
 
 /// Classic (Continue / Play / New game), Daily, best score, Settings.
 /// Back from here exits the app (default root-route behaviour).

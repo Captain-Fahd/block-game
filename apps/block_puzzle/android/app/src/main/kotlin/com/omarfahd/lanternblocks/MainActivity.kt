@@ -1,4 +1,4 @@
-package com.omarfahd.blockpuzzle
+package com.omarfahd.lanternblocks
 
 import io.flutter.embedding.android.FlutterActivity
 

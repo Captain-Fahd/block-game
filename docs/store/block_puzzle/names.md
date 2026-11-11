@@ -35,3 +35,6 @@ Checked 2026-11-11. Omar picks one; it sets the app id `com.omarfahd.<name>` (pe
   - Inkwell Blocks: "Inky Blocks" game.
   - Copper Blocks: Minecraft's "Block of Copper".
   - Wick Blocks: the "Blockwick" block-puzzle series.
+
+## Decision
+Omar picked **Lantern Blocks** on 2026-11-11 (ADR 008).

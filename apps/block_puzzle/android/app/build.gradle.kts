@@ -26,7 +26,7 @@ val dartDefines: Map<String, String> =
 val releaseAdMobAppId = dartDefines["ADMOB_APP_ID"]?.takeIf { it.isNotBlank() } ?: sampleAdMobAppId
 
 android {
-    namespace = "com.omarfahd.blockpuzzle"
+    namespace = "com.omarfahd.lanternblocks"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -36,8 +36,8 @@ android {
     }
 
     defaultConfig {
-        // Interim id; becomes com.omarfahd.<name> once the name is picked (P2.0).
-        applicationId = "com.omarfahd.blockpuzzle"
+        // Lantern Blocks (P2.0, ADR 008). Permanent once published on Play.
+        applicationId = "com.omarfahd.lanternblocks"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion

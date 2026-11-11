@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
-        android:label="block_puzzle"
+        android:label="Lantern Blocks"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <!-- AdMob app id: set in app/build.gradle.kts (sample id except in
