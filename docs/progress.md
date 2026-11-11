@@ -38,6 +38,9 @@ Newest entries at the top. One entry per session: what got done, what's next, bl
 - "Subtle haptics when moving along the grid" → **selection tick** on each new valid landing cell, throttled to 35 ms. New `HapticPattern.selection` in `game_core`.
 - ADR 005 round 2; SPEC.md updated. Tests: 140 block puzzle, 30 game_core. New build installed on the phone.
 
+### Playtest feedback round 3 (Omar)
+- "Too quick when swiping quickly" → drag gain max 1.8 → 1.4, full-gain speed 15 → 20 cells/s (ADR 005 round 3).
+
 ### Not done
 - **Phase 4 acceptance:** Omar plays 5 games and gives feedback on feel (drag offset, sizes, sounds, shake), which I apply before Phase 5.
 

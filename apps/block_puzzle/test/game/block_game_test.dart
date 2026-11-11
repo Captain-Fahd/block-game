@@ -186,7 +186,10 @@ void main() {
           game.moveDrag(finger);
         }
         final fastMoved = (game.drag!.topLeft - tl1).distance;
-        expect(fastMoved, greaterThan(4 * cell * 1.4));
+        expect(
+          fastMoved,
+          greaterThan(4 * cell * (1 + (kDragGainMax - 1) * 0.8)),
+        );
         expect(fastMoved, lessThanOrEqualTo(4 * cell * kDragGainMax + 1e-6));
       },
     );

@@ -125,12 +125,12 @@ const double kDragFingerOffsetCells = 1.5;
 /// a gain that depends on finger speed (cells per second), like pointer
 /// acceleration. Slow, precise moves stay 1:1; quick swipes go further.
 const double kDragGainMin = 1.0;
-const double kDragGainMax = 1.8;
+const double kDragGainMax = 1.4;
 
 /// Finger speed (cells/s) where acceleration starts, and where it reaches
 /// [kDragGainMax]. Eased in between.
 const double kDragAccelStartSpeed = 3;
-const double kDragAccelFullSpeed = 15;
+const double kDragAccelFullSpeed = 20;
 
 /// Smoothing for the finger-speed estimate (0..1, higher = more responsive).
 const double kDragSpeedSmoothing = 0.5;

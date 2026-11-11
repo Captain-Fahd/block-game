@@ -60,7 +60,7 @@ Classic placement block puzzle. Original name and visuals — no borrowing from 
 
 - Blocks: rounded squares with a subtle top highlight and darker bottom edge, drawn on `Canvas`; 7–8 colours from the theme palette; optional pattern overlay per colour for colour-blind mode.
 - Drag: piece lifts and scales up from tray size to board cell size, rendered above the finger (configurable offset ~1.5 cells) so the finger doesn't cover it. Ghost preview on the board shows where it will land; red tint or no ghost when it doesn't fit.
-- Drag acceleration (ADR 005): the piece moves by the finger's movement times a speed-based gain: 1:1 for slow, precise moves, easing up to 1.8× for quick swipes. The piece always stays on screen.
+- Drag acceleration (ADR 005): the piece moves by the finger's movement times a speed-based gain: 1:1 for slow, precise moves, easing up to 1.4× for quick swipes. The piece always stays on screen.
 - Clear preview (ADR 005): while the ghost is valid and the drop would complete rows/columns, those lines' blocks show in the dragged piece's colour with a pulsing glow.
 - Snap: piece snaps to the nearest cell if it fits; otherwise to the closest fitting position within 0.9 cells of where it's held (ADR 005), so being slightly off still lands. If nothing fits, it returns to the tray with an ease-out animation.
 - Grid haptics (ADR 005): a subtle selection tick each time the valid landing cell changes while dragging (at most every 35 ms).

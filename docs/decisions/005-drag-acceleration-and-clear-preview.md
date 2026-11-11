@@ -25,3 +25,8 @@ Omar: "The snapping to grid is a bit too strict. If I am off by even a little bi
 
 - **Tolerant snap.** The piece still snaps to the nearest cell when that fits. If it doesn't (overlapping a block by a sliver, or a little past the board edge), `findSnap` picks the closest fitting position within `kSnapToleranceCells` (0.9) of where the piece is held. A spot a full cell away still counts as a different spot, so drops don't jump unexpectedly.
 - **Grid ticks.** `game_core` `HapticPattern.selection` (Android's lightest selection click) plays each time the valid landing cell changes, throttled to one per `kGridTickMinInterval` (35 ms) so fast swipes don't buzz. No tick for invalid spots or over the tray. It respects the haptics setting, and the phone's system touch-vibration setting must be on (it is on Omar's phone).
+
+## Round 3 (same playtest)
+Omar: "It feels too quick when swiping quickly, reduce the acceleration."
+
+- `kDragGainMax` 1.8 → **1.4**, and `kDragAccelFullSpeed` 15 → **20** cells/s, so the gain ramps in more gently and tops out lower. Slow moves are unchanged (1:1 below 3 cells/s).
