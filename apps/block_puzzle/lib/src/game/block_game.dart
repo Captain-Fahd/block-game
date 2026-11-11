@@ -403,8 +403,7 @@ class BlockGame extends FlameGame {
 
   void _feedback(PlacementResult r, int streakBefore) {
     if (r.linesCleared > 0) {
-      final rate = math.min(kClearPitchMax, 1 + streakBefore * kClearPitchStep);
-      audio?.play(Sfx.clear, rate: rate);
+      audio?.play(Sfx.clear, rate: clearRate(streakBefore));
       haptics?.play(HapticPattern.medium);
     } else {
       audio?.play(Sfx.place);

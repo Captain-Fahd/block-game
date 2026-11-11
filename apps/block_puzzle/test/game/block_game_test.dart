@@ -317,7 +317,7 @@ void main() {
         final r = dragTo(game, 0, 0, 0)!;
         expect(r.linesCleared, 3);
         expect(game.play.isShaking, isTrue);
-        expect(h.audio.played.first.$2, closeTo(1 + 2 * kClearPitchStep, 1e-9));
+        expect(h.audio.played.first.$2, closeTo(clearRate(2), 1e-9));
         game.update(kShakeDuration + 0.01);
         expect(game.play.isShaking, isFalse);
         expect(game.play.position, Vector2.zero());

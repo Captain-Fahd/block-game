@@ -189,9 +189,9 @@ const double kStreakPulseDuration = 0.25;
 const double kGameOverDelay = 0.6;
 
 // --- Sound and haptics ---------------------------------------------------
-/// Clear sound pitch rises by this much per streak step, up to the cap.
-const double kClearPitchStep = 0.06;
-const double kClearPitchMax = 1.6;
+/// Clear sound pitch per streak level, in semitones (musical steps, so it
+/// stays in key). Streaks past the end use the last value; +7 = 1.5x.
+const List<int> kClearStreakSemitones = [0, 2, 4, 5, 7];
 
 // --- Ads (spec "Ad placement and caps") ------------------------------------
 /// Interstitial caps: never in the first 2 games of an install, at least
