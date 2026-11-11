@@ -49,6 +49,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               title: const Text('Privacy options'),
               subtitle: const Text('Change your ad consent choices'),
               onTap: () async {
+                UiSounds.play(context, UiSound.tap);
                 await s.consent.showPrivacyOptionsForm();
                 if (mounted) setState(() {});
               },
@@ -59,32 +60,41 @@ class _SettingsScreenState extends State<SettingsScreen> {
               leading: const Icon(Icons.description_rounded),
               title: const Text('Privacy policy'),
               trailing: const Icon(Icons.open_in_new_rounded, size: 20),
-              onTap: () => s.openUrl?.call(policy),
+              onTap: () {
+                UiSounds.play(context, UiSound.tap);
+                s.openUrl?.call(policy);
+              },
             ),
           ListTile(
             key: const Key('tutorial'),
             leading: const Icon(Icons.school_rounded),
             title: const Text('How to play'),
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute<void>(
-                builder: (_) =>
-                    TutorialScreen(onDone: Navigator.of(context).pop),
-              ),
-            ),
+            onTap: () {
+              UiSounds.play(context, UiSound.tap);
+              Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) =>
+                      TutorialScreen(onDone: Navigator.of(context).pop),
+                ),
+              );
+            },
           ),
           ListTile(
             key: const Key('credits'),
             leading: const Icon(Icons.info_outline_rounded),
             title: const Text('Credits and licences'),
-            onTap: () => showLicensePage(
-              context: context,
-              applicationName: kAppTitle,
-              applicationVersion: s.version,
-              applicationLegalese:
-                  'Game design, graphics and sound effects are original and '
-                  'made in code for this game. Font: Nunito (SIL Open Font '
-                  'Licence). Open-source licences are listed below.',
-            ),
+            onTap: () {
+              UiSounds.play(context, UiSound.tap);
+              showLicensePage(
+                context: context,
+                applicationName: kAppTitle,
+                applicationVersion: s.version,
+                applicationLegalese:
+                    'Game design, graphics and sound effects are original and '
+                    'made in code for this game. Font: Nunito (SIL Open Font '
+                    'Licence). Open-source licences are listed below.',
+              );
+            },
           ),
           ListTile(
             leading: const Icon(Icons.tag_rounded),
@@ -117,7 +127,12 @@ class _Toggle extends StatelessWidget {
       title: Text(label),
       subtitle: subtitle == null ? null : Text(subtitle!),
       value: on,
-      onChanged: (v) => value.value = v,
+      onChanged: (v) {
+        // Turning sound off is silent (the setting applies first); turning
+        // it on plays the blip.
+        value.value = v;
+        UiSounds.play(context, UiSound.toggle, on: v);
+      },
     ),
   );
 }

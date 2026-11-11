@@ -64,4 +64,42 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Paused'), findsNothing);
   });
+
+  testWidgets('GameButton plays a UI tap via UiSounds; silent without it', (
+    tester,
+  ) async {
+    final played = <(UiSound, bool)>[];
+    var taps = 0;
+    Widget app({required bool withSounds}) {
+      final body = Column(
+        children: [
+          GameButton(label: 'Go', onPressed: () => taps++),
+          const GameButton(label: 'Off', onPressed: null),
+        ],
+      );
+      return MaterialApp(
+        home: Scaffold(
+          body: withSounds
+              ? UiSounds(
+                  player: (s, {on = true}) => played.add((s, on)),
+                  child: body,
+                )
+              : body,
+        ),
+      );
+    }
+
+    await tester.pumpWidget(app(withSounds: true));
+    await tester.tap(find.text('Go'));
+    await tester.tap(find.text('Off'));
+    await tester.pump();
+    expect(played, [(UiSound.tap, true)]);
+    expect(taps, 1);
+
+    await tester.pumpWidget(app(withSounds: false));
+    await tester.tap(find.text('Go'));
+    await tester.pump();
+    expect(taps, 2, reason: 'still works with no UiSounds');
+    expect(played, hasLength(1));
+  });
 }

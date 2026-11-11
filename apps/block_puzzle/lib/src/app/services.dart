@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:game_core/game_core.dart';
 
+import '../constants.dart';
 import '../data/progress_store.dart';
 import '../game/sfx.dart';
 
@@ -86,3 +87,17 @@ abstract final class GameEvents {
     'cause': cause,
   };
 }
+
+/// Wraps the app's navigator so shared widgets (and screens) can play menu
+/// sounds through the game's audio service; respects the sound setting.
+Widget withUiSounds(AppServices s, Widget? child) => UiSounds(
+  player: (sound, {on = true}) => switch (sound) {
+    UiSound.tap => s.audio.play(Sfx.uiTap, volume: kUiTapVolume),
+    UiSound.toggle => s.audio.play(
+      Sfx.uiToggle,
+      volume: kUiToggleVolume,
+      rate: on ? kUiToggleOnRate : kUiToggleOffRate,
+    ),
+  },
+  child: child ?? const SizedBox.shrink(),
+);

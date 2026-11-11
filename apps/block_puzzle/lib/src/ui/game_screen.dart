@@ -247,7 +247,10 @@ class GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
                 iconSize: 30,
                 color: GameColors.textSecondary,
                 icon: const Icon(Icons.pause_rounded),
-                onPressed: pause,
+                onPressed: () {
+                  UiSounds.play(context, UiSound.tap);
+                  pause();
+                },
               ),
             ),
             if (mode == GameMode.daily)

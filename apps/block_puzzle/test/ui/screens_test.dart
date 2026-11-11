@@ -1,6 +1,7 @@
 import 'package:block_puzzle/src/app/app.dart';
 import 'package:block_puzzle/src/constants.dart';
 import 'package:block_puzzle/src/game/block_game.dart';
+import 'package:block_puzzle/src/game/sfx.dart';
 import 'package:block_puzzle/src/model/daily_seed.dart';
 import 'package:block_puzzle/src/model/game_controller.dart';
 import 'package:block_puzzle/src/model/game_state.dart';
@@ -346,6 +347,34 @@ void main() {
         expect(find.byType(HomeScreen), findsOneWidget);
       },
     );
+  });
+
+  group('Menu sounds', () {
+    phoneTest('buttons and icons tap; switches blip with on/off pitch', (
+      t,
+    ) async {
+      final ts = TestServices();
+      await t.pumpWidget(wrap(ts.services, const HomeScreen()));
+      await t.tap(find.byKey(const Key('settings')));
+      await settle(t);
+      expect(ts.audio.played, [(Sfx.uiTap, 1.0)]);
+
+      await t.tap(find.byKey(const Key('toggle:Colour-blind patterns')));
+      await t.pump();
+      await t.tap(find.byKey(const Key('toggle:Colour-blind patterns')));
+      await t.pump();
+      expect(ts.audio.played.skip(1), [
+        (Sfx.uiToggle, kUiToggleOnRate),
+        (Sfx.uiToggle, kUiToggleOffRate),
+      ]);
+
+      ts.audio.played.clear();
+      await t.pageBack();
+      await settle(t);
+      await t.tap(find.byKey(const Key('play')));
+      await settle(t);
+      expect(ts.audio.played.first, (Sfx.uiTap, 1.0));
+    });
   });
 
   group('Settings', () {

@@ -200,3 +200,12 @@ const double kClearPitchMax = 1.6;
 const int kInterstitialMinGapSeconds = 120;
 const int kFreeGamesAfterInstall = 2;
 const Duration kMinGameDurationForInterstitial = Duration(seconds: 30);
+
+// --- Menu sounds -------------------------------------------------------------
+/// Menu sounds sit well under the gameplay sounds.
+const double kUiTapVolume = 0.35;
+const double kUiToggleVolume = 0.4;
+
+/// Toggle blip pitch: a little higher for "on", lower for "off".
+const double kUiToggleOnRate = 1.12;
+const double kUiToggleOffRate = 0.9;

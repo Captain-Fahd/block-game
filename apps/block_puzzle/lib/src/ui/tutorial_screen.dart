@@ -175,7 +175,10 @@ class TutorialScreenState extends State<TutorialScreen> {
               right: GameSpacing.sm,
               child: TextButton(
                 key: const Key('skipTutorial'),
-                onPressed: () => complete(skipped: true),
+                onPressed: () {
+                  UiSounds.play(context, UiSound.tap);
+                  complete(skipped: true);
+                },
                 child: const Text('Skip'),
               ),
             ),

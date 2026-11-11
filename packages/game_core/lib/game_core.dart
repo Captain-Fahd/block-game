@@ -19,3 +19,4 @@ export 'src/storage.dart';
 export 'src/theme/game_theme.dart';
 export 'src/theme/tokens.dart';
 export 'src/theme/widgets.dart';
+export 'src/ui_sounds.dart';

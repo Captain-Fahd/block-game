@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../ui_sounds.dart';
 import 'tokens.dart';
 
 enum GameButtonStyle { primary, secondary }
@@ -71,6 +72,7 @@ class _GameButtonState extends State<GameButton> {
         onTapUp: enabled
             ? (_) {
                 setState(() => _down = false);
+                UiSounds.play(context, UiSound.tap);
                 widget.onPressed!();
               }
             : null,

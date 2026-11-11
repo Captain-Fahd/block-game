@@ -45,6 +45,7 @@ class _BlockPuzzleAppState extends State<BlockPuzzleApp>
       title: kAppTitle,
       debugShowCheckedModeBanner: false,
       theme: buildGameTheme(),
+      builder: (_, child) => withUiSounds(widget.services, child),
       home:
           widget.home ??
           (widget.services.progress.tutorialDone

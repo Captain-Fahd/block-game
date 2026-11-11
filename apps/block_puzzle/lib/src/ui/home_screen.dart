@@ -50,7 +50,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 iconSize: 30,
                 color: GameColors.textSecondary,
                 icon: const Icon(Icons.settings_rounded),
-                onPressed: () => _open(const SettingsScreen()),
+                onPressed: () {
+                  UiSounds.play(context, UiSound.tap);
+                  _open(const SettingsScreen());
+                },
               ),
             ),
             Center(

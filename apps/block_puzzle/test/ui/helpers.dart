@@ -70,7 +70,11 @@ class TestServices {
 /// Wraps [child] like the real app does.
 Widget wrap(AppServices s, Widget child) => ServicesScope(
   services: s,
-  child: MaterialApp(theme: buildGameTheme(), home: child),
+  child: MaterialApp(
+    theme: buildGameTheme(),
+    builder: (_, c) => withUiSounds(s, c),
+    home: child,
+  ),
 );
 
 /// Lets Flame load and run a few frames.

@@ -18,6 +18,8 @@ void main() {
     'invalid.wav': invalid(),
     'game_over.wav': gameOver(),
     'new_best.wav': newBest(),
+    'ui_tap.wav': uiTap(),
+    'ui_toggle.wav': uiToggle(),
   };
   for (final e in sounds.entries) {
     final f = File('${out.path}/${e.key}');
@@ -73,6 +75,31 @@ List<double> invalid() {
     final x = math.sin(2 * math.pi * 160 * t);
     // Gentle saturation for a buzzier, still soft, tone.
     return 0.55 * env * (x + 0.3 * x * x * x);
+  });
+}
+
+/// Menu tap: a very short, soft high tick (a damped sine with a gentle
+/// attack, so there's no click).
+List<double> uiTap() {
+  final n = _n(0.035);
+  return List.generate(n, (i) {
+    final t = i / sampleRate;
+    final env = math.exp(-t * 140) * math.min(1, t * 2000);
+    return 0.6 * env * math.sin(2 * math.pi * 1650 * t);
+  });
+}
+
+/// Toggle: two tiny rising blips. The game raises or lowers the rate for
+/// on / off.
+List<double> uiToggle() {
+  final n = _n(0.09);
+  return List.generate(n, (i) {
+    final t = i / sampleRate;
+    final second = t >= 0.04;
+    final local = second ? t - 0.04 : t;
+    final f = second ? 1320.0 : 990.0;
+    final env = math.exp(-local * 90) * math.min(1, local * 2000);
+    return 0.5 * env * math.sin(2 * math.pi * f * local);
   });
 }
 
