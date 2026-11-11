@@ -30,7 +30,7 @@ Newest entries at the top. One entry per session: what got done, what's next, bl
 
 ### Notes and decisions
 - One saved game per mode (the spec said "a saved game"); a saved Daily is only resumable on its own date.
-- "Music" is in Settings per spec, but there's no music track yet, so it currently does nothing.
+- No music (ADR 006): the Music toggle has been removed from Settings.
 - The app title is the working title "Block Puzzle" until P2.0.
 
 ### Next

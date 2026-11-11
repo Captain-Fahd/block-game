@@ -5,7 +5,7 @@ import '../app/services.dart';
 import 'home_screen.dart';
 import 'tutorial_screen.dart';
 
-/// Sound, music, vibration, colour-blind patterns, privacy options (only
+/// Sound, vibration, colour-blind patterns, privacy options (only
 /// when consent requires them), privacy policy, tutorial, credits and
 /// licences, version.
 class SettingsScreen extends StatefulWidget {
@@ -34,7 +34,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
         padding: const EdgeInsets.symmetric(vertical: GameSpacing.sm),
         children: [
           _Toggle('Sound effects', Icons.volume_up_rounded, st.sound),
-          _Toggle('Music', Icons.music_note_rounded, st.music),
           _Toggle('Vibration', Icons.vibration_rounded, st.haptics),
           _Toggle(
             'Colour-blind patterns',

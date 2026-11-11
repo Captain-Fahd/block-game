@@ -70,7 +70,7 @@ Classic placement block puzzle. Original name and visuals — no borrowing from 
 
 ## Screens
 
-Home (Classic, Daily, Settings, best score) → Game → Game over (second-chance offer) → Results (score, best, "Play again", "Home") ; Settings (sound, music, haptics, colour-blind patterns, privacy options, privacy policy link, credits/licences, version).
+Home (Classic, Daily, Settings, best score) → Game → Game over (second-chance offer) → Results (score, best, "Play again", "Home") ; Settings (sound, haptics, colour-blind patterns, privacy options, privacy policy link, credits/licences, version).
 
 ## Tutorial
 

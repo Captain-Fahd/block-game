@@ -359,6 +359,7 @@ void main() {
       expect(ts.services.settings.colourBlindPatterns.value, isTrue);
       expect(Settings(ts.store).haptics.value, isFalse, reason: 'persisted');
       expect(find.text('0.1.0 (1)'), findsOneWidget);
+      expect(find.text('Music'), findsNothing, reason: 'no music (ADR 006)');
     });
 
     phoneTest('privacy options only when consent requires them', (t) async {
