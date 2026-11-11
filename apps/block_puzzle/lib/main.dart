@@ -21,6 +21,7 @@ Future<void> main() async {
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   final store = await SharedPrefsStore.open();
   final settings = Settings(store);
+  if (kAutoplayMute) settings.sound.value = false;
   final audio = FlameAudioService<Sfx>(
     files: kSfxFiles,
     sound: settings.sound,

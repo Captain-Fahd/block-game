@@ -91,7 +91,7 @@ class BlockGame extends FlameGame {
     add(play);
     _ensureSprites();
     _syncTray(animate: false);
-    play.add(ClearingBlock.prewarm());
+    add(Prewarm());
   }
 
   @override

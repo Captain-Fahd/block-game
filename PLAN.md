@@ -202,7 +202,7 @@ Save the full game state (board, tray, score, streak, RNG state, mode) on every 
 - [x] **P4.4** Clear animation, particles, floating score, screen shake, streak indicator.
 - [x] **P4.5** Audio and haptics hooks through `game_core`.
 - [x] **P4.6** Golden tests for board states (empty, mid-game, ghost valid, ghost invalid, colour-blind mode).
-- [ ] **P4.7 Performance.** Profile on the real device: steady 60 fps during clears; no jank on first clear (pre-warm particles and shaders).
+- [x] **P4.7 Performance.** Profile on the real device: steady 60 fps during clears; no jank on first clear (pre-warm particles and shaders).
 
 **Acceptance:** a full Classic game is playable on a device start to game over; [OMAR] plays 5 games and gives feedback on feel, which Claude Code applies before moving on.
 

@@ -20,14 +20,19 @@ Newest entries at the top. One entry per session: what got done, what's next, bl
 ### Measured
 - The phone's display runs at **120 Hz**, so the frame budget is 8.3 ms.
 - Debug build with autoplay: frame p50 5.6–6.9 ms, p95 about 10 ms (debug is much slower than profile).
-- Profile build: **not measured yet**. The first run was spoiled by the screen dimming and locking partway through. See Next.
+- Profile build (autoplay, 120 Hz, frames logged in batches of about 300):
+  - **Before fixes:** spikes of 30–49 ms (1–5 per batch), and after about 70 s a slowdown (p50 9.4 ms, 46 of 301 frames over 16.7 ms). A muted run had no spikes and no slowdown, so audio was the cause: `FlameAudio.play` creates and loads a new player for every effect and never disposes it.
+  - **After the voice pool** (`game_core` `FlameAudioService`: 3 low-latency players per effect, created at preload and reused): 90 s with sound on, every batch after the first has max ≤ 17.5 ms and p95 10.4–12.1 ms. Raster p95 is 6.2–7.5 ms, there's no slowdown, and component counts stay at 18–38.
+  - **First clear:** the old pre-warm was a no-op (its "invisible" block skipped all drawing). The new `Prewarm` component draws every effect path (alpha sprites, flash, particle, floating text at all three sizes with shadow and saveLayer) at near-zero opacity for 3 frames. Before: 2 frames of 17–21 ms on or just after the first clear. After: no slow frame around the first clear in the 2 cold starts where it fell inside the logged window.
+  - **Remaining:** 1–2 slow frames in the first frames after launch (GPU setup, before input is possible), and a rare isolated ~19 ms frame (about 1 in 1,000) not tied to clears, probably CPU clock ramp-up.
+
+- **P4.7 ticked** (see Measured).
 
 ### Not done
-- **P4.7 performance:** needs a clean profile run on the unlocked phone, including the first clear after launch.
 - **Phase 4 acceptance:** Omar plays 5 games and gives feedback on feel (drag offset, sizes, sounds, shake), which I apply before Phase 5.
 
 ### Next
-- Finish P4.7, then install a normal (non-autoplay) build for Omar's 5-game playtest.
+- Omar's 5-game playtest. A normal profile build without autoplay is installed on his phone. Apply his feedback, then start Phase 5.
 - Then Phase 5 (screens, overlays, persistence, daily, tutorial, settings).
 
 ## 2026-11-11

@@ -200,9 +200,7 @@ void main() {
         final r = dragTo(game, 0, 7, 0)!;
         expect(r.linesCleared, 1);
         await game.ready();
-        final clearing = game.play.children.whereType<ClearingBlock>().where(
-          (b) => !b.invisible,
-        );
+        final clearing = game.play.children.whereType<ClearingBlock>();
         expect(clearing, hasLength(8));
         expect(
           game.play.children.whereType<FloatingText>().map((t) => t.text),

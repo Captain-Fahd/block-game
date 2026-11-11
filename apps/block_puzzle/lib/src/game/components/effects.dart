@@ -15,26 +15,12 @@ mixin TransientEffect on Component {}
 /// particles.
 class ClearingBlock extends PositionComponent
     with TransientEffect, HasGameReference<BlockGame> {
-  ClearingBlock({
-    required this.colourIndex,
-    required this.rect,
-    this.delay = 0,
-    this.invisible = false,
-  }) : super(priority: 50);
-
-  /// Drawn off-screen and invisible once at load, so the first real clear
-  /// doesn't pay for first-use setup (particles, shaders, paints).
-  ClearingBlock.prewarm()
-    : this(
-        colourIndex: 0,
-        rect: const Rect.fromLTWH(-500, -500, 10, 10),
-        invisible: true,
-      );
+  ClearingBlock({required this.colourIndex, required this.rect, this.delay = 0})
+    : super(priority: 50);
 
   final int colourIndex;
   final Rect rect;
   final double delay;
-  final bool invisible;
   double _t = 0;
   bool _burst = false;
 
@@ -64,7 +50,7 @@ class ClearingBlock extends PositionComponent
     parent?.add(
       _Particles(
         Particle.generate(
-          count: invisible ? 1 : kParticlesPerCell,
+          count: kParticlesPerCell,
           lifespan: kParticleLifespan,
           generator: (_) {
             final angle = rand.nextDouble() * math.pi * 2;
@@ -78,7 +64,6 @@ class ClearingBlock extends PositionComponent
               acceleration: Vector2(0, kParticleGravityCells * cell),
               child: ComputedParticle(
                 renderer: (canvas, particle) {
-                  if (invisible) return;
                   paint.color = colour.withValues(
                     alpha: (1 - particle.progress).clamp(0, 1),
                   );
@@ -101,7 +86,7 @@ class ClearingBlock extends PositionComponent
 
   @override
   void render(Canvas canvas) {
-    if (invisible || _t < 0) return;
+    if (_t < 0) return;
     final local = _t - delay;
     if (local < 0) {
       // Waiting for the sweep to reach this cell: still drawn as a block.
@@ -158,18 +143,20 @@ class FloatingText extends Component
   late final TextPainter _painter;
   final Paint _layer = Paint();
 
+  static TextStyle style(double fontSize, {required bool strong}) => TextStyle(
+    fontFamily: kGameFontFamily,
+    fontSize: fontSize,
+    fontWeight: FontWeight.w900,
+    color: strong ? GameColors.accent : GameColors.textPrimary,
+    shadows: const [Shadow(blurRadius: 6, color: Color(0xAA000000))],
+  );
+
   @override
   Future<void> onLoad() async {
     _painter = TextPainter(
       text: TextSpan(
         text: text,
-        style: TextStyle(
-          fontFamily: kGameFontFamily,
-          fontSize: fontSize,
-          fontWeight: FontWeight.w900,
-          color: strong ? GameColors.accent : GameColors.textPrimary,
-          shadows: const [Shadow(blurRadius: 6, color: Color(0xAA000000))],
-        ),
+        style: style(fontSize, strong: strong),
       ),
       textDirection: TextDirection.ltr,
     )..layout();
@@ -201,5 +188,75 @@ class FloatingText extends Component
     );
     _painter.paint(canvas, pos);
     canvas.restore();
+  }
+}
+
+/// Draws every effect path once, at near-zero opacity, for the first few
+/// frames after load, so the first real clear doesn't pay for first-use
+/// GPU and text-layout setup (P4.7). Text sizes match [FloatingText] uses
+/// in [BlockGame].
+class Prewarm extends Component with HasGameReference<BlockGame> {
+  Prewarm({this.frames = 3}) : super(priority: 1000);
+
+  final int frames;
+  int _drawn = 0;
+  final List<TextPainter> _painters = [];
+  final Paint _layer = Paint()..color = const Color(0x02000000);
+  final Paint _flash = Paint()..color = const Color(0xD9FFFFFF);
+  final Paint _particle = Paint()..color = const Color(0xFFFFFFFF);
+
+  @override
+  Future<void> onLoad() async {
+    final cell = game.layout.cell;
+    for (final (size, strong) in [
+      (cell * 0.5, false),
+      (cell * 0.7, true),
+      (cell * 0.9, true),
+    ]) {
+      _painters.add(
+        TextPainter(
+          text: TextSpan(
+            text: '+0123456789 x Board clear!',
+            style: FloatingText.style(size, strong: strong),
+          ),
+          textDirection: TextDirection.ltr,
+        )..layout(),
+      );
+    }
+  }
+
+  @override
+  void render(Canvas canvas) {
+    final cell = game.layout.cell;
+    if (cell <= 0) return;
+    final r = game.layout.cellRect(0, 0);
+    canvas.saveLayer(game.layout.board, _layer);
+    for (var i = 0; i < 8; i++) {
+      game.sprites.draw(canvas, i, r, opacity: 0.5);
+    }
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(r, Radius.circular(cell * 0.2)),
+      _flash,
+    );
+    canvas.drawRect(
+      Rect.fromLTWH(r.left, r.top, cell * 0.2, cell * 0.2),
+      _particle,
+    );
+    var y = r.top;
+    for (final p in _painters) {
+      canvas.saveLayer(
+        Rect.fromLTWH(r.left, y, p.width, p.height),
+        Paint()..color = const Color(0x80000000),
+      );
+      p.paint(canvas, Offset(r.left, y));
+      canvas.restore();
+      y += p.height;
+    }
+    canvas.restore();
+  }
+
+  @override
+  void update(double dt) {
+    if (++_drawn >= frames) removeFromParent();
   }
 }

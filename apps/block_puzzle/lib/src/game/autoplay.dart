@@ -1,3 +1,4 @@
+import 'dart:developer' show Timeline;
 import 'dart:ui';
 
 import 'package:flame/components.dart';
@@ -16,6 +17,10 @@ import 'block_game.dart';
 /// frame times. Never active in release builds.
 const bool kAutoplay = bool.fromEnvironment('AUTOPLAY') && !kReleaseMode;
 
+/// With autoplay, also turn sound off (to isolate audio cost when
+/// profiling).
+const bool kAutoplayMute = kAutoplay && bool.fromEnvironment('AUTOPLAY_MUTE');
+
 /// Greedy bot: picks the move that clears the most lines (then the one
 /// that leaves the fewest filled cells) and drags it there over a few
 /// frames, like a quick human.
@@ -28,6 +33,7 @@ class Autoplay extends Component with HasGameReference<BlockGame> {
   _Move? _move;
   double _t = 0;
   int _games = 0;
+  int _clearsLogged = 0;
 
   @override
   void update(double dt) {
@@ -37,7 +43,14 @@ class Autoplay extends Component with HasGameReference<BlockGame> {
       final k = (_t / dragTime).clamp(0.0, 1.0);
       game.moveDrag(Offset.lerp(m.from, m.to, k)!);
       if (k >= 1) {
-        game.endDrag();
+        final r = game.endDrag();
+        if (r != null && r.linesCleared > 0 && _clearsLogged < 3) {
+          _clearsLogged++;
+          Logger('frames').info(
+            'clear #$_clearsLogged (${r.linesCleared} lines) at '
+            '${Timeline.now ~/ 1000} ms',
+          );
+        }
         _move = null;
         _wait = pause;
       }
@@ -151,10 +164,22 @@ class FrameStats {
 
   void _onTimings(List<FrameTiming> timings) {
     for (final t in timings) {
+      if (_batches == 0 && t.totalSpan.inMicroseconds > 16667) {
+        _log.info(
+          'slow frame at '
+          '${t.timestampInMicroseconds(FramePhase.vsyncStart) ~/ 1000} ms: '
+          'build ${t.buildDuration.inMicroseconds / 1000} ms, '
+          'raster ${t.rasterDuration.inMicroseconds / 1000} ms, '
+          'total ${t.totalSpan.inMicroseconds / 1000} ms',
+        );
+      }
       _totalUs.add(t.totalSpan.inMicroseconds);
       _rasterUs.add(t.rasterDuration.inMicroseconds);
     }
     if (_totalUs.length < every) return;
+    if (_batches == 0) {
+      _log.info('first batch ends at ${Timeline.now ~/ 1000} ms');
+    }
     _batches++;
     final total = [..._totalUs]..sort();
     final raster = [..._rasterUs]..sort();
