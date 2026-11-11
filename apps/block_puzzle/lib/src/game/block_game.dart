@@ -54,7 +54,10 @@ class BlockGame extends FlameGame {
     ValueListenable<bool>? colourBlind,
     this.best = 0,
     this.onGameOver,
+    this.onPlacement,
     this._pixelRatio,
+    this._hiddenSlots = const {},
+    this.showHud = true,
   }) : colourBlind = colourBlind ?? ValueNotifier(false);
 
   GameController _controller;
@@ -68,6 +71,21 @@ class BlockGame extends FlameGame {
   /// Called (after a short delay for the last animation) when no tray piece
   /// fits.
   final void Function(BlockGame game)? onGameOver;
+
+  /// Called after every placement (saving, tutorial steps, analytics).
+  final void Function(PlacementResult result)? onPlacement;
+
+  /// Tray slots that are neither shown nor draggable (the tutorial offers
+  /// one piece at a time this way, without the tray refilling).
+  Set<int> _hiddenSlots;
+  Set<int> get hiddenSlots => _hiddenSlots;
+
+  /// Score/best/streak above the board (off in the tutorial, which shows
+  /// its own instructions there).
+  final bool showHud;
+
+  /// Board cells outlined with a pulsing hint (tutorial targets).
+  Set<CellOffset> hintCells = const {};
   final double? _pixelRatio;
 
   /// Speed-based drag acceleration (see [dragGain]). Autoplay turns it off
@@ -112,7 +130,7 @@ class BlockGame extends FlameGame {
     board = BoardComponent();
     hud = HudComponent();
     slots = [for (var i = 0; i < kTraySize; i++) TraySlot(i)];
-    play = PlayArea()..addAll([board, hud, ...slots]);
+    play = PlayArea()..addAll([board, if (showHud) hud, ...slots]);
     add(play);
     _ensureSprites();
     _syncTray(animate: false);
@@ -153,8 +171,13 @@ class BlockGame extends FlameGame {
   // --- New game / resume -------------------------------------------------
 
   /// Replaces the running game (Play again, resume, second chance).
-  void startGame(GameController controller, {int? best}) {
+  void startGame(
+    GameController controller, {
+    int? best,
+    Set<int> hiddenSlots = const {},
+  }) {
     _controller = controller;
+    _hiddenSlots = hiddenSlots;
     if (best != null) this.best = best;
     _newBestFired = false;
     _gameOverIn = null;
@@ -178,7 +201,7 @@ class BlockGame extends FlameGame {
   void _syncTray({required bool animate}) {
     final tray = _controller.state.tray;
     for (var i = 0; i < slots.length; i++) {
-      final piece = tray[i];
+      final piece = _hiddenSlots.contains(i) ? null : tray[i];
       final slot = slots[i];
       if (slot.view?.piece.id == piece?.id && piece != null) continue;
       slot.clear();
@@ -207,7 +230,8 @@ class BlockGame extends FlameGame {
   }
 
   bool startDrag(int slot, Offset finger) {
-    if (_drag != null || _controller.isOver) return false;
+    if (_drag != null || _controller.isOver || paused) return false;
+    if (_hiddenSlots.contains(slot)) return false;
     final view = slots[slot].view;
     if (view == null) return false;
     final d = _drag = DragState(
@@ -368,6 +392,7 @@ class BlockGame extends FlameGame {
       streakUp: result.score.streakAfter.streak > streakBefore,
     );
     if (result.trayRefilled) _syncTray(animate: true);
+    onPlacement?.call(result);
 
     if (result.gameOver) {
       audio?.play(Sfx.gameOver);

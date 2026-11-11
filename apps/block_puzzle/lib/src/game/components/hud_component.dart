@@ -74,7 +74,9 @@ class HudComponent extends PositionComponent with HasGameReference<BlockGame> {
     }
   }
 
-  void celebrateBest() => _pulse(_best, 1.3);
+  void celebrateBest() {
+    if (_ready) _pulse(_best, 1.3);
+  }
 
   void _pulse(PositionComponent c, double to) {
     c.children.whereType<Effect>().toList().forEach(

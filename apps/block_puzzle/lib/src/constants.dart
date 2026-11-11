@@ -192,3 +192,11 @@ const double kGameOverDelay = 0.6;
 /// Clear sound pitch rises by this much per streak step, up to the cap.
 const double kClearPitchStep = 0.06;
 const double kClearPitchMax = 1.6;
+
+// --- Ads (spec "Ad placement and caps") ------------------------------------
+/// Interstitial caps: never in the first 2 games of an install, at least
+/// 120 s apart, and not after games shorter than 30 s. (Also skipped after
+/// a rewarded ad in the same game-over flow.)
+const int kInterstitialMinGapSeconds = 120;
+const int kFreeGamesAfterInstall = 2;
+const Duration kMinGameDurationForInterstitial = Duration(seconds: 30);

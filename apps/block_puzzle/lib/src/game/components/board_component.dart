@@ -15,6 +15,9 @@ class BoardComponent extends PositionComponent
   double _wellCell = -1;
 
   final Paint _glow = Paint();
+  final Paint _hint = Paint()
+    ..style = PaintingStyle.stroke
+    ..color = GameColors.accent;
 
   static final Paint _invalid = Paint()
     ..color = GameColors.danger.withValues(alpha: 0.45);
@@ -72,6 +75,8 @@ class BoardComponent extends PositionComponent
       }
     }
 
+    _renderHints(canvas);
+
     final g = game.ghost;
     if (g == null) return;
     final preview = game.clearPreview;
@@ -127,6 +132,25 @@ class BoardComponent extends PositionComponent
           radius,
         ),
         _glow,
+      );
+    }
+  }
+
+  void _renderHints(Canvas canvas) {
+    final hints = game.hintCells;
+    if (hints.isEmpty) return;
+    final cell = game.layout.cell;
+    final wave = 0.5 + 0.5 * math.sin(2 * math.pi * 1.5 * game.time);
+    _hint
+      ..strokeWidth = cell * 0.07
+      ..color = GameColors.accent.withValues(alpha: 0.45 + 0.55 * wave);
+    for (final c in hints) {
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          _local(c.row, c.col).deflate(cell * 0.09),
+          Radius.circular(cell * 0.16),
+        ),
+        _hint,
       );
     }
   }

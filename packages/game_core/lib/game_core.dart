@@ -11,6 +11,7 @@ export 'src/consent.dart';
 export 'src/crash_reporting.dart';
 export 'src/haptics.dart';
 export 'src/house_ads.dart';
+export 'src/licenses.dart';
 export 'src/logger.dart';
 export 'src/review.dart';
 export 'src/settings.dart';
