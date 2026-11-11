@@ -101,6 +101,12 @@ class GameLayout {
     return Rect.fromLTWH(tray.left + slot * w, tray.top, w, tray.height);
   }
 
+  /// Where [topLeft] is on the grid, in (fractional) cells.
+  ({double row, double col}) gridPosition(Offset topLeft) => (
+    row: (topLeft.dy - gridOrigin.dy) / cell,
+    col: (topLeft.dx - gridOrigin.dx) / cell,
+  );
+
   /// The grid cell a piece would snap to if its top-left corner is at
   /// [topLeft], or null if it is more than [kSnapThresholdCells] from any
   /// cell. Row/col may be out of range; the board decides if it fits.

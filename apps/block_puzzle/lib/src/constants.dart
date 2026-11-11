@@ -138,6 +138,15 @@ const double kDragSpeedSmoothing = 0.5;
 /// How far (in cells) a dragged piece may be from a cell and still snap.
 const double kSnapThresholdCells = 0.5;
 
+/// If the nearest cell doesn't fit, the piece snaps to the closest position
+/// that does fit within this distance (in cells) of where it is held, so
+/// being slightly off still lands.
+const double kSnapToleranceCells = 0.9;
+
+/// While dragging, a subtle haptic tick when the landing cell changes, at
+/// most once per this many seconds.
+const double kGridTickMinInterval = 0.035;
+
 /// Seconds for a lifted piece to scale up / a dropped piece to fly home.
 const double kLiftDuration = 0.08;
 const double kReturnDuration = 0.18;

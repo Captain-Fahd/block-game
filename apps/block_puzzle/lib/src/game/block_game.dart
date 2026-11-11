@@ -16,6 +16,7 @@ import 'components/effects.dart';
 import 'components/hud_component.dart';
 import 'components/tray.dart';
 import 'drag_gain.dart';
+import 'snap.dart';
 import 'layout.dart';
 import 'sfx.dart';
 
@@ -76,6 +77,7 @@ class BlockGame extends FlameGame {
   /// Game clock, for finger speed and pulsing effects.
   double _time = 0;
   double get time => _time;
+  double _lastTick = double.negativeInfinity;
 
   /// Cells that would clear if the dragged piece were dropped on the
   /// current (valid) ghost. Empty otherwise.
@@ -258,19 +260,41 @@ class BlockGame extends FlameGame {
       tl.dx + piece.width * dragCell / 2,
       tl.dy + piece.height * dragCell / 2,
     );
-    final snap = layout.snapCell(tl);
     final before = ghost;
-    if (snap == null || !_overlapsBoard(piece, snap.row, snap.col)) {
-      ghost = null;
+    final nearest = layout.snapCell(tl);
+    final pos = layout.gridPosition(tl);
+    final fit = nearest == null
+        ? null
+        : findSnap(
+            row: pos.row,
+            col: pos.col,
+            fits: (r, c) => _controller.canPlace(d.slot, r, c),
+          );
+    if (fit != null) {
+      ghost = (piece: piece, row: fit.row, col: fit.col, valid: true);
+    } else if (nearest != null &&
+        _overlapsBoard(piece, nearest.row, nearest.col)) {
+      ghost = (piece: piece, row: nearest.row, col: nearest.col, valid: false);
     } else {
-      ghost = (
-        piece: piece,
-        row: snap.row,
-        col: snap.col,
-        valid: _controller.canPlace(d.slot, snap.row, snap.col),
-      );
+      ghost = null;
     }
+    _gridTick(before);
     if (ghost != before) _updateClearPreview();
+  }
+
+  /// Subtle tick when the valid landing cell changes while dragging.
+  void _gridTick(Ghost? before) {
+    final g = ghost;
+    if (g == null || !g.valid) return;
+    if (before != null &&
+        before.valid &&
+        before.row == g.row &&
+        before.col == g.col) {
+      return;
+    }
+    if (_time - _lastTick < kGridTickMinInterval) return;
+    _lastTick = _time;
+    haptics?.play(HapticPattern.selection);
   }
 
   void _updateClearPreview() {

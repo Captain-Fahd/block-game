@@ -113,10 +113,12 @@ void main() {
 
     test('plays patterns when enabled', () async {
       final h = PlatformHaptics(ValueNotifier(true), successGap: Duration.zero);
+      await h.play(HapticPattern.selection);
       await h.play(HapticPattern.light);
       await h.play(HapticPattern.medium);
       await h.play(HapticPattern.success);
       expect(calls, [
+        'HapticFeedbackType.selectionClick',
         'HapticFeedbackType.lightImpact',
         'HapticFeedbackType.mediumImpact',
         'HapticFeedbackType.mediumImpact',

@@ -75,6 +75,10 @@ Offset fingerFor(BlockGame g, Piece piece, int row, int col) {
   );
 }
 
+/// Haptics other than the grid ticks while dragging.
+List<HapticPattern> _impacts(_Harness h) =>
+    h.haptics.played.where((p) => p != HapticPattern.selection).toList();
+
 PlacementResult? dragTo(BlockGame g, int slot, int row, int col) {
   final piece = g.controller.state.tray[slot]!;
   final home = g.slots[slot].home;
@@ -101,7 +105,7 @@ void main() {
         expect(game.slots[0].view, isNull);
         expect(game.controller.state.score, 3);
         expect(h.audio.played.map((e) => e.$1), [Sfx.place]);
-        expect(h.haptics.played, [HapticPattern.light]);
+        expect(_impacts(h), [HapticPattern.light]);
         expect(game.ghost, isNull);
       },
     );
@@ -265,7 +269,7 @@ void main() {
           hasLength(1),
         );
         expect(h.audio.played.single, (Sfx.clear, 1.0));
-        expect(h.haptics.played, [HapticPattern.medium]);
+        expect(_impacts(h), [HapticPattern.medium]);
         expect(game.play.isShaking, isFalse);
 
         // Effects finish and remove themselves.
@@ -331,6 +335,82 @@ void main() {
         for (var i = 0; i < kTraySize; i++) {
           expect(game.slots[i].view?.piece, game.controller.state.tray[i]);
         }
+      },
+    );
+  });
+
+  group('BlockGame snapping tolerance and grid ticks', () {
+    late _Harness h;
+
+    testWithGame<BlockGame>(
+      'held slightly over a block, the piece lands on the free spot next to it',
+      () => (h = _Harness(
+        controller: controllerWith(board: [..._empty.take(7), '...0....']),
+      )).game,
+      (game) async {
+        game.onGameResize(size);
+        await game.ready();
+        final piece = game.controller.state.tray[0]!; // I3_h
+        final home = game.slots[0].home;
+        game.startDrag(0, Offset(home.x, home.y));
+        // Nearest is (7,1), which overlaps the block at (7,3); 0.45 cells
+        // to the left is (7,0), which fits.
+        final c = game.layout.cell;
+        game.moveDrag(fingerFor(game, piece, 7, 1) - Offset(0.55 * c, 0));
+        expect(game.ghost, (piece: piece, row: 7, col: 0, valid: true));
+        expect(game.endDrag(), isNotNull);
+        expect(game.controller.state.board.at(7, 0), isNot(Board.emptyCell));
+      },
+    );
+
+    testWithGame<BlockGame>(
+      'slightly past the board edge still lands on the edge',
+      () => (h = _Harness()).game,
+      (game) async {
+        game.onGameResize(size);
+        await game.ready();
+        final piece = game.controller.state.tray[0]!;
+        final home = game.slots[0].home;
+        game.startDrag(0, Offset(home.x, home.y));
+        final c = game.layout.cell;
+        game.moveDrag(fingerFor(game, piece, 3, 0) - Offset(0.6 * c, 0));
+        expect(game.ghost, (piece: piece, row: 3, col: 0, valid: true));
+      },
+    );
+
+    testWithGame<BlockGame>(
+      'a tick per new landing cell, throttled, none for invalid spots',
+      () => (h = _Harness(
+        controller: controllerWith(board: [..._empty.take(7), '0.......']),
+      )).game,
+      (game) async {
+        game.onGameResize(size);
+        await game.ready();
+        final piece = game.controller.state.tray[0]!;
+        final home = game.slots[0].home;
+        int ticks() =>
+            h.haptics.played.where((p) => p == HapticPattern.selection).length;
+        // Big jumps between frames would otherwise count as fast swipes.
+        game.dragAcceleration = false;
+
+        game.startDrag(0, Offset(home.x, home.y));
+        expect(ticks(), 0); // over the tray: no ghost
+        game.update(0.1);
+        game.moveDrag(fingerFor(game, piece, 2, 2));
+        expect(ticks(), 1);
+        game.update(0.1);
+        game.moveDrag(fingerFor(game, piece, 2, 2) + const Offset(1, 1));
+        expect(ticks(), 1, reason: 'same cell');
+        game.update(0.1);
+        game.moveDrag(fingerFor(game, piece, 2, 3));
+        expect(ticks(), 2);
+        // Same frame (no time passed): throttled.
+        game.moveDrag(fingerFor(game, piece, 2, 4));
+        expect(ticks(), 2);
+        game.update(0.1);
+        game.moveDrag(fingerFor(game, piece, 7, 0)); // invalid
+        expect(game.ghost?.valid, isFalse);
+        expect(ticks(), 2);
       },
     );
   });

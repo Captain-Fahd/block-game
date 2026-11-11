@@ -1,7 +1,13 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
-enum HapticPattern { light, medium, success }
+enum HapticPattern {
+  /// The subtlest tick, for moving across a grid or a picker.
+  selection,
+  light,
+  medium,
+  success,
+}
 
 abstract class Haptics {
   Future<void> play(HapticPattern pattern);
@@ -21,6 +27,8 @@ class PlatformHaptics implements Haptics {
   Future<void> play(HapticPattern pattern) async {
     if (!enabled.value) return;
     switch (pattern) {
+      case HapticPattern.selection:
+        await HapticFeedback.selectionClick();
       case HapticPattern.light:
         await HapticFeedback.lightImpact();
       case HapticPattern.medium:

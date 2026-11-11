@@ -19,3 +19,9 @@ The Phase 2 spec had the piece follow the finger 1:1 and only a landing ghost (n
 - Autoplay (debug/profile tool) turns acceleration off, because it computes exact 1:1 finger paths.
 - The preview costs one board copy and line scan per snap-cell change, which is negligible.
 - Tests cover the gain curve, 1:1 slow drags, accelerated fast drags, the on-screen clamp, preview cells for a row and a row+column cross, no preview for invalid ghosts, and clearing the preview on drop and cancel. A golden image shows the preview.
+
+## Round 2 (same playtest)
+Omar: "The snapping to grid is a bit too strict. If I am off by even a little bit it doesn't register. Also add subtle haptics/vibrations when moving along the grid."
+
+- **Tolerant snap.** The piece still snaps to the nearest cell when that fits. If it doesn't (overlapping a block by a sliver, or a little past the board edge), `findSnap` picks the closest fitting position within `kSnapToleranceCells` (0.9) of where the piece is held. A spot a full cell away still counts as a different spot, so drops don't jump unexpectedly.
+- **Grid ticks.** `game_core` `HapticPattern.selection` (Android's lightest selection click) plays each time the valid landing cell changes, throttled to one per `kGridTickMinInterval` (35 ms) so fast swipes don't buzz. No tick for invalid spots or over the tray. It respects the haptics setting, and the phone's system touch-vibration setting must be on (it is on Omar's phone).
