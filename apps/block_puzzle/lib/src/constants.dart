@@ -145,6 +145,13 @@ const double kReturnDuration = 0.18;
 /// Seconds for a newly dealt tray piece to pop in.
 const double kDealDuration = 0.22;
 
+// --- Clear preview (while dragging) ------------------------------------
+/// When a valid drop would complete lines, those lines' blocks show in the
+/// dragged piece's colour with a pulsing white glow between these alphas.
+const double kClearPreviewGlowMin = 0.10;
+const double kClearPreviewGlowMax = 0.35;
+const double kClearPreviewPulseHz = 2.2;
+
 // --- Clear feedback ------------------------------------------------------
 const double kClearFlashDuration = 0.10;
 const double kClearShrinkDuration = 0.22;

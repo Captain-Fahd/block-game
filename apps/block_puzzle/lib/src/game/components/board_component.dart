@@ -1,9 +1,11 @@
+import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flame/components.dart';
 import 'package:flutter/painting.dart';
 import 'package:game_core/game_core.dart';
 
+import '../../constants.dart';
 import '../block_game.dart';
 
 /// The board well, empty cells, placed blocks and the drag ghost.
@@ -11,6 +13,8 @@ class BoardComponent extends PositionComponent
     with HasGameReference<BlockGame> {
   ui.Picture? _well;
   double _wellCell = -1;
+
+  final Paint _glow = Paint();
 
   static final Paint _invalid = Paint()
     ..color = GameColors.danger.withValues(alpha: 0.45);
@@ -70,13 +74,29 @@ class BoardComponent extends PositionComponent
 
     final g = game.ghost;
     if (g == null) return;
+    final preview = game.clearPreview;
+
+    // Lines the drop would complete: existing blocks take the dragged
+    // piece's colour so the player sees what will clear.
+    for (final c in preview) {
+      if (board.isFilled(c.row, c.col)) {
+        sprites.draw(canvas, g.piece.colourIndex, _local(c.row, c.col));
+      }
+    }
+
     for (final cell in g.piece.cells) {
       final r = g.row + cell.row;
       final c = g.col + cell.col;
       if (r < 0 || c < 0 || r >= board.size || c >= board.size) continue;
       final rect = _local(r, c);
       if (g.valid) {
-        sprites.draw(canvas, g.piece.colourIndex, rect, opacity: 0.4);
+        final full = preview.contains((row: r, col: c));
+        sprites.draw(
+          canvas,
+          g.piece.colourIndex,
+          rect,
+          opacity: full ? 1 : 0.4,
+        );
       } else if (!board.isFilled(r, c)) {
         canvas.drawRRect(
           RRect.fromRectAndRadius(
@@ -86,6 +106,28 @@ class BoardComponent extends PositionComponent
           _invalid,
         );
       }
+    }
+
+    if (preview.isEmpty) return;
+    final wave =
+        0.5 + 0.5 * math.sin(2 * math.pi * kClearPreviewPulseHz * game.time);
+    _glow.color = const Color(0xFFFFFFFF).withValues(
+      alpha:
+          kClearPreviewGlowMin +
+          (kClearPreviewGlowMax - kClearPreviewGlowMin) * wave,
+    );
+    final radius = Radius.circular(game.layout.cell * 0.2);
+    for (final c in preview) {
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          _local(
+            c.row,
+            c.col,
+          ).deflate(game.layout.cell * kBlockGapFraction / 2),
+          radius,
+        ),
+        _glow,
+      );
     }
   }
 

@@ -73,8 +73,13 @@ class BlockGame extends FlameGame {
   /// so its finger paths land exactly.
   bool dragAcceleration = true;
 
-  /// Game clock, for finger speed.
+  /// Game clock, for finger speed and pulsing effects.
   double _time = 0;
+  double get time => _time;
+
+  /// Cells that would clear if the dragged piece were dropped on the
+  /// current (valid) ghost. Empty otherwise.
+  Set<CellOffset> clearPreview = const {};
 
   GameController get controller => _controller;
   GameLayout layout = GameLayout.compute(Size.zero);
@@ -154,6 +159,7 @@ class BlockGame extends FlameGame {
     _drag?.view.removeFromParent();
     _drag = null;
     ghost = null;
+    clearPreview = const {};
     play.children.whereType<TransientEffect>().forEach(
       (e) => e.removeFromParent(),
     );
@@ -253,6 +259,7 @@ class BlockGame extends FlameGame {
       tl.dy + piece.height * dragCell / 2,
     );
     final snap = layout.snapCell(tl);
+    final before = ghost;
     if (snap == null || !_overlapsBoard(piece, snap.row, snap.col)) {
       ghost = null;
     } else {
@@ -263,6 +270,17 @@ class BlockGame extends FlameGame {
         valid: _controller.canPlace(d.slot, snap.row, snap.col),
       );
     }
+    if (ghost != before) _updateClearPreview();
+  }
+
+  void _updateClearPreview() {
+    final g = ghost;
+    if (g == null || !g.valid) {
+      clearPreview = const {};
+      return;
+    }
+    final placed = _controller.state.board.place(g.piece, g.row, g.col);
+    clearPreview = placed.cellsIn(placed.findFullLines());
   }
 
   bool _overlapsBoard(Piece p, int row, int col) {
@@ -278,6 +296,7 @@ class BlockGame extends FlameGame {
     _drag = null;
     final g = ghost;
     ghost = null;
+    clearPreview = const {};
     if (g == null || !g.valid) {
       if (g != null) audio?.play(Sfx.invalid);
       d.view.returnHome();
@@ -291,6 +310,7 @@ class BlockGame extends FlameGame {
     if (d == null) return;
     _drag = null;
     ghost = null;
+    clearPreview = const {};
     d.view.returnHome();
   }
 

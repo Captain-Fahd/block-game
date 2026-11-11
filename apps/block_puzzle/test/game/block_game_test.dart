@@ -335,6 +335,85 @@ void main() {
     );
   });
 
+  group('BlockGame clear preview', () {
+    testWithGame<BlockGame>(
+      'hovering where a drop completes a row previews that row',
+      () => (_Harness(
+        controller: controllerWith(
+          board: ['7.......', ..._empty.skip(1).take(6), '...12345'],
+        ),
+      )).game,
+      (game) async {
+        game.onGameResize(size);
+        await game.ready();
+        final piece = game.controller.state.tray[0]!; // I3_h
+        final home = game.slots[0].home;
+        game.startDrag(0, Offset(home.x, home.y));
+
+        game.moveDrag(fingerFor(game, piece, 3, 0));
+        expect(game.ghost?.valid, isTrue);
+        expect(game.clearPreview, isEmpty);
+
+        game.moveDrag(fingerFor(game, piece, 7, 0));
+        expect(game.clearPreview, {
+          for (var c = 0; c < 8; c++) (row: 7, col: c),
+        });
+
+        game.cancelDrag();
+        expect(game.clearPreview, isEmpty);
+      },
+    );
+
+    testWithGame<BlockGame>(
+      'row and column at once: crossing cell counted once',
+      () => (_Harness(
+        controller: controllerWith(
+          board: [
+            '.1111111',
+            '1.......',
+            '1.......',
+            '1.......',
+            '1.......',
+            '1.......',
+            '1.......',
+            '1.......',
+          ],
+          tray: ['mono', 'O', null],
+        ),
+      )).game,
+      (game) async {
+        game.onGameResize(size);
+        await game.ready();
+        final piece = game.controller.state.tray[0]!;
+        final home = game.slots[0].home;
+        game.startDrag(0, Offset(home.x, home.y));
+        game.moveDrag(fingerFor(game, piece, 0, 0));
+        expect(game.clearPreview, hasLength(15));
+        expect(game.clearPreview, contains((row: 0, col: 0)));
+        // Dropping clears the preview along with the lines.
+        expect(game.endDrag()!.linesCleared, 2);
+        expect(game.clearPreview, isEmpty);
+      },
+    );
+
+    testWithGame<BlockGame>(
+      'no preview for an invalid ghost',
+      () => (_Harness(
+        controller: controllerWith(board: [..._empty.take(7), '0..12345']),
+      )).game,
+      (game) async {
+        game.onGameResize(size);
+        await game.ready();
+        final piece = game.controller.state.tray[0]!;
+        final home = game.slots[0].home;
+        game.startDrag(0, Offset(home.x, home.y));
+        game.moveDrag(fingerFor(game, piece, 7, 0));
+        expect(game.ghost?.valid, isFalse);
+        expect(game.clearPreview, isEmpty);
+      },
+    );
+  });
+
   group('BlockGame game over and best score', () {
     late _Harness h;
     const checker = [

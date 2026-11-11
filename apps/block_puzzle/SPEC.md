@@ -59,7 +59,9 @@ Classic placement block puzzle. Original name and visuals — no borrowing from 
 ## Feel ("juice") — code-drawn
 
 - Blocks: rounded squares with a subtle top highlight and darker bottom edge, drawn on `Canvas`; 7–8 colours from the theme palette; optional pattern overlay per colour for colour-blind mode.
-- Drag: piece lifts and scales up ~1.15×, rendered above the finger (configurable offset ~1.5 cells) so the finger doesn't cover it. Ghost preview on the board shows where it will land; red tint or no ghost when it doesn't fit.
+- Drag: piece lifts and scales up from tray size to board cell size, rendered above the finger (configurable offset ~1.5 cells) so the finger doesn't cover it. Ghost preview on the board shows where it will land; red tint or no ghost when it doesn't fit.
+- Drag acceleration (ADR 005): the piece moves by the finger's movement times a speed-based gain: 1:1 for slow, precise moves, easing up to 1.8× for quick swipes. The piece always stays on screen.
+- Clear preview (ADR 005): while the ghost is valid and the drop would complete rows/columns, those lines' blocks show in the dragged piece's colour with a pulsing glow.
 - Snap: piece snaps to the nearest valid cell within half a cell; otherwise returns to the tray with an ease-out animation.
 - Clear: cleared cells flash, shrink and burst into particles; short screen shake on 3+ lines; floating score text; streak counter pulses.
 - Sound: place, clear (pitch rises with streak), invalid drop, game over, new best. Kenney CC0 interface/UI sound packs.

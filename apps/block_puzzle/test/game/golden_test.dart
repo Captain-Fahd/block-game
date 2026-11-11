@@ -23,6 +23,19 @@ const _midGame = [
   '66.3333.',
 ];
 
+/// Row 3 is full except col 4; an I3_v at (1,4) fills (1..3,4) and
+/// completes row 3.
+const _previewBoard = [
+  '........',
+  '..55....',
+  '..5.....',
+  '0000.117',
+  '...2.11.',
+  '...2....',
+  '6..2..77',
+  '66.3333.',
+];
+
 BlockGame _game(
   List<String> rows, {
   List<String?> tray = const ['L4_0', 'O', 'I3_v'],
@@ -95,6 +108,21 @@ void main() {
     game: _game(_midGame, score: 840),
     size: _size,
     goldenFile: 'goldens/ghost_invalid.png',
+  );
+
+  testGolden(
+    'clear preview',
+    (game, tester) async {
+      final g = game as BlockGame;
+      await _settle(g);
+      final piece = pieceById('I3_v');
+      g.ghost = (piece: piece, row: 1, col: 4, valid: true);
+      final placed = g.controller.state.board.place(piece, 1, 4);
+      g.clearPreview = placed.cellsIn(placed.findFullLines());
+    },
+    game: _game(_previewBoard, score: 840, tray: const ['L4_0', 'O', 'I3_v']),
+    size: _size,
+    goldenFile: 'goldens/clear_preview.png',
   );
 
   testGolden(
