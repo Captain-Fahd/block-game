@@ -7,6 +7,7 @@ import 'package:game_core/game_core.dart';
 
 import '../../constants.dart';
 import '../block_game.dart';
+import '../glow.dart';
 
 /// Short-lived visual effects; cleared when a new game starts.
 mixin TransientEffect on Component {}
@@ -46,34 +47,43 @@ class ClearingBlock extends PositionComponent
         : GameColors.blocks;
     final colour = colours[colourIndex % colours.length];
     final rand = math.Random();
-    final paint = Paint()..color = colour;
+    // Embers lean from the block colour toward lantern amber.
+    final ember = Color.lerp(colour, kLanternAmber, kEmberWarmth)!;
+    final glow = game.glow;
     parent?.add(
       _Particles(
         Particle.generate(
           count: kParticlesPerCell,
           lifespan: kParticleLifespan,
           generator: (_) {
-            final angle = rand.nextDouble() * math.pi * 2;
-            final speed = (0.4 + rand.nextDouble() * 0.6) * kParticleSpeedCells;
-            final side = cell * (0.12 + rand.nextDouble() * 0.12);
+            // Mostly upward, spread sideways; buoyancy keeps them rising.
+            final angle = -math.pi / 2 + (rand.nextDouble() - 0.5) * 2.2;
+            final speed = (0.5 + rand.nextDouble() * 0.5) * kParticleSpeedCells;
+            final size =
+                cell *
+                (kEmberMinSize +
+                    rand.nextDouble() * (kEmberMaxSize - kEmberMinSize));
+            final jitter = Vector2(
+              (rand.nextDouble() - 0.5) * cell * 0.6,
+              (rand.nextDouble() - 0.5) * cell * 0.6,
+            );
             return AcceleratedParticle(
-              position: Vector2(rect.center.dx, rect.center.dy),
-              speed:
-                  Vector2(math.cos(angle), math.sin(angle) - 0.6) *
-                  (speed * cell),
-              acceleration: Vector2(0, kParticleGravityCells * cell),
+              position: Vector2(rect.center.dx, rect.center.dy) + jitter,
+              speed: Vector2(math.cos(angle), math.sin(angle)) * (speed * cell),
+              acceleration: Vector2(0, -kParticleBuoyancyCells * cell),
               child: ComputedParticle(
                 renderer: (canvas, particle) {
-                  paint.color = colour.withValues(
-                    alpha: (1 - particle.progress).clamp(0, 1),
+                  final p = particle.progress;
+                  // Quick fade-in, slow fade-out, shrinking as it cools.
+                  final a = (p < 0.15 ? p / 0.15 : 1 - (p - 0.15) / 0.85).clamp(
+                    0.0,
+                    1.0,
                   );
-                  canvas.drawRect(
-                    Rect.fromCenter(
-                      center: Offset.zero,
-                      width: side,
-                      height: side,
-                    ),
-                    paint,
+                  glow.draw(
+                    canvas,
+                    Offset.zero,
+                    size * (1 - 0.4 * p),
+                    ember.withValues(alpha: a),
                   );
                 },
               ),
@@ -242,6 +252,7 @@ class Prewarm extends Component with HasGameReference<BlockGame> {
       Rect.fromLTWH(r.left, r.top, cell * 0.2, cell * 0.2),
       _particle,
     );
+    game.glow.draw(canvas, r.center, cell, kLanternAmber);
     var y = r.top;
     for (final p in _painters) {
       canvas.saveLayer(

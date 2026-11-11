@@ -5,6 +5,7 @@ import '../app/services.dart';
 import '../model/game_controller.dart';
 import '../model/game_state.dart';
 import 'game_screen.dart';
+import 'lantern_logo.dart';
 import 'settings_screen.dart';
 
 /// The game's name (P2.0, ADR 008). Store title: "Lantern Blocks: Block
@@ -66,7 +67,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const _Logo(),
+                        const LanternLogo(),
                         const SizedBox(height: GameSpacing.md),
                         Text(
                           kAppTitle,
@@ -150,44 +151,6 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ),
-    );
-  }
-}
-
-/// Small code-drawn mark: four blocks.
-class _Logo extends StatelessWidget {
-  const _Logo();
-
-  @override
-  Widget build(BuildContext context) {
-    Widget block(Color c) => Container(
-      width: 30,
-      height: 30,
-      margin: const EdgeInsets.all(2),
-      decoration: BoxDecoration(
-        color: c,
-        borderRadius: BorderRadius.circular(7),
-        border: Border(
-          bottom: BorderSide(
-            color: Color.lerp(c, const Color(0xFF000000), 0.3)!,
-            width: 4,
-          ),
-        ),
-      ),
-    );
-    final b = GameColors.blocks;
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [block(b[0]), block(b[2])],
-        ),
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [block(b[5]), block(b[3])],
-        ),
-      ],
     );
   }
 }

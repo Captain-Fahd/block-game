@@ -156,7 +156,8 @@ const double kDealDuration = 0.22;
 
 // --- Clear preview (while dragging) ------------------------------------
 /// When a valid drop would complete lines, those lines' blocks show in the
-/// dragged piece's colour with a pulsing white glow between these alphas.
+/// dragged piece's colour with a pulsing warm amber glow between these
+/// alphas (ADR 008).
 const double kClearPreviewGlowMin = 0.10;
 const double kClearPreviewGlowMax = 0.35;
 const double kClearPreviewPulseHz = 2.2;
@@ -164,12 +165,22 @@ const double kClearPreviewPulseHz = 2.2;
 // --- Clear feedback ------------------------------------------------------
 const double kClearFlashDuration = 0.10;
 const double kClearShrinkDuration = 0.22;
-const int kParticlesPerCell = 5;
-const double kParticleLifespan = 0.55;
 
-/// Particle launch speed and gravity, in cells per second (squared).
-const double kParticleSpeedCells = 6;
-const double kParticleGravityCells = 18;
+/// Embers released per cleared cell (ADR 008): warm lights that rise and
+/// fade, instead of debris falling with gravity.
+const int kParticlesPerCell = 5;
+const double kParticleLifespan = 0.9;
+
+/// Ember launch speed and upward buoyancy, in cells per second (squared).
+const double kParticleSpeedCells = 3.2;
+const double kParticleBuoyancyCells = 5;
+
+/// How far ember colour leans from the block colour toward lantern amber.
+const double kEmberWarmth = 0.45;
+
+/// Ember size range, as a fraction of a cell.
+const double kEmberMinSize = 0.22;
+const double kEmberMaxSize = 0.42;
 
 /// Screen shake when at least this many lines clear at once.
 const int kShakeMinLines = 3;
@@ -214,3 +225,23 @@ const double kUiToggleVolume = 0.4;
 /// Toggle blip pitch: a little higher for "on", lower for "off".
 const double kUiToggleOnRate = 1.12;
 const double kUiToggleOffRate = 0.9;
+
+// --- Lantern ambience (ADR 008) ---------------------------------------------
+/// Warm light pooled behind the board: radius as a fraction of the board
+/// width, and its resting alpha.
+const double kBoardGlowRadius = 0.95;
+const double kBoardGlowAlpha = 0.11;
+
+/// Each cleared line flares the glow by this much (capped), fading over
+/// [kBoardGlowFlareDecay] seconds.
+const double kBoardGlowFlarePerLine = 0.05;
+const double kBoardGlowFlareMax = 0.18;
+const double kBoardGlowFlareDecay = 0.9;
+
+/// Faint lights drifting up the background.
+const int kMoteCount = 14;
+const double kMoteMinSpeedCells = 0.12;
+const double kMoteMaxSpeedCells = 0.35;
+const double kMoteMinSize = 0.10;
+const double kMoteMaxSize = 0.24;
+const double kMoteMaxAlpha = 0.30;

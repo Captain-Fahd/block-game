@@ -7,6 +7,7 @@ import 'package:game_core/game_core.dart';
 
 import '../../constants.dart';
 import '../block_game.dart';
+import '../glow.dart';
 
 /// The board well, empty cells, placed blocks and the drag ghost.
 class BoardComponent extends PositionComponent
@@ -116,7 +117,7 @@ class BoardComponent extends PositionComponent
     if (preview.isEmpty) return;
     final wave =
         0.5 + 0.5 * math.sin(2 * math.pi * kClearPreviewPulseHz * game.time);
-    _glow.color = const Color(0xFFFFFFFF).withValues(
+    _glow.color = kLanternAmber.withValues(
       alpha:
           kClearPreviewGlowMin +
           (kClearPreviewGlowMax - kClearPreviewGlowMin) * wave,

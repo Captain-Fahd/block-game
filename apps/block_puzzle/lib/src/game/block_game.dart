@@ -11,11 +11,13 @@ import '../model/board.dart';
 import '../model/game_controller.dart';
 import '../model/piece.dart';
 import 'block_sprites.dart';
+import 'components/ambient.dart';
 import 'components/board_component.dart';
 import 'components/effects.dart';
 import 'components/hud_component.dart';
 import 'components/tray.dart';
 import 'drag_gain.dart';
+import 'glow.dart';
 import 'snap.dart';
 import 'layout.dart';
 import 'sfx.dart';
@@ -106,6 +108,10 @@ class BlockGame extends FlameGame {
   BlockSprites? _sprites;
   BlockSprites get sprites => _sprites!;
 
+  /// Shared soft light for motes, embers and glows (ADR 008).
+  final GlowSprite glow = GlowSprite.render();
+  late final AmbientLight ambient;
+
   late final PlayArea play;
   late final BoardComponent board;
   late final HudComponent hud;
@@ -130,7 +136,8 @@ class BlockGame extends FlameGame {
     board = BoardComponent();
     hud = HudComponent();
     slots = [for (var i = 0; i < kTraySize; i++) TraySlot(i)];
-    play = PlayArea()..addAll([board, if (showHud) hud, ...slots]);
+    ambient = AmbientLight();
+    play = PlayArea()..addAll([ambient, board, if (showHud) hud, ...slots]);
     add(play);
     _ensureSprites();
     _syncTray(animate: false);
@@ -149,6 +156,7 @@ class BlockGame extends FlameGame {
   void onRemove() {
     colourBlind.removeListener(_onColourBlind);
     _sprites?.dispose();
+    glow.dispose();
     super.onRemove();
   }
 
@@ -428,6 +436,7 @@ class BlockGame extends FlameGame {
       );
       return;
     }
+    ambient.flare(r.linesCleared);
     for (final c in r.clearedCells) {
       play.add(
         ClearingBlock(
