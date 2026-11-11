@@ -24,3 +24,22 @@ plugins {
 }
 
 include(":app")
+
+// NixOS: Flutter SDK plugins (e.g. integration_test) live in the read-only
+// Nix store, and Gradle 9 refuses project directories it can't write to.
+// Point any such plugin project at a writable copy under build/. No-op on
+// normal (writable) SDK installs. See docs/decisions/001-nixos-aapt2.md.
+gradle.settingsEvaluated {
+    val copies = file("../build/nix-sdk-plugins")
+    rootProject.children.forEach { p ->
+        val dir = p.projectDir
+        if (dir.isDirectory && !java.nio.file.Files.isWritable(dir.toPath())) {
+            val copy = copies.resolve(p.name)
+            if (!copy.isDirectory) {
+                dir.copyRecursively(copy, overwrite = true)
+                copy.walkTopDown().forEach { it.setWritable(true, true) }
+            }
+            p.projectDir = copy
+        }
+    }
+}
