@@ -65,7 +65,7 @@ Classic placement block puzzle. Original name and visuals — no borrowing from 
 - Snap: piece snaps to the nearest cell if it fits; otherwise to the closest fitting position within 0.9 cells of where it's held (ADR 005), so being slightly off still lands. If nothing fits, it returns to the tray with an ease-out animation.
 - Grid haptics (ADR 005): a subtle selection tick each time the valid landing cell changes while dragging (at most every 35 ms).
 - Clear: cleared cells flash, shrink and burst into particles; short screen shake on 3+ lines; floating score text; streak counter pulses.
-- Sound: place, clear (pitch rises with streak), invalid drop, game over, new best. Kenney CC0 interface/UI sound packs.
+- Sound: place, clear (pitch rises with streak), invalid drop, game over, new best. Generated in code by `tool/make_sfx.dart` (ADR 004; replaces the Kenney packs).
 - Menu sounds (ADR 004): a soft tick on button / row / icon taps and a small blip on switches (higher for on, lower for off), quieter than gameplay sounds; off with the Sound effects setting.
 - Haptics: light on place, medium on clear, success on new best.
 
