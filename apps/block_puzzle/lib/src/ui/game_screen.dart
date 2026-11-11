@@ -37,6 +37,7 @@ class GameScreen extends StatefulWidget {
 class GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
   late final AppServices _s = ServicesScope.of(context);
   late final BlockGame game;
+  final _log = Logger('game');
   final Stopwatch _played = Stopwatch();
   bool _rewardedWatched = false;
   bool _finishing = false;
@@ -161,6 +162,9 @@ class GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
       _s.analytics.logEvent(AnalyticsEvents.adRewardedOffered);
     }
     _offerSecondChance = offer;
+    _log.info(
+      'game over: score ${c.state.score}, second chance offered: $offer',
+    );
     game.overlays.add(GameOverOverlay.id);
     if (!offer) {
       // Show "No moves left" briefly, then results.
@@ -173,6 +177,7 @@ class GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
 
   Future<void> watchForSecondChance() async {
     final earned = await _s.ads.showRewarded();
+    _log.info('rewarded finished: earned $earned');
     if (!mounted) return;
     if (!earned) {
       await finish();

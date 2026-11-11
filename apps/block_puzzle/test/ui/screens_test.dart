@@ -471,6 +471,82 @@ void main() {
     });
   });
 
+  group('Banner (ADR 007)', () {
+    phoneTest('Results shows the banner at the bottom, below the buttons', (
+      t,
+    ) async {
+      final ts = TestServices();
+      await t.pumpWidget(wrap(ts.services, const HomeScreen()));
+      t
+          .state<NavigatorState>(find.byType(Navigator))
+          .push(
+            MaterialPageRoute<void>(
+              builder: (_) => const ResultsScreen(
+                mode: GameMode.classic,
+                record: (
+                  score: 10,
+                  previousBest: 20,
+                  best: 20,
+                  newBest: false,
+                  gamesPlayed: 1,
+                  dailyStreak: 0,
+                ),
+                gameDuration: Duration(minutes: 1),
+                rewardedWatched: false,
+              ),
+            ),
+          );
+      await settle(t);
+      final banner = find.byKey(const Key('fakeBanner'));
+      expect(banner, findsOneWidget);
+      final bannerTop = t.getTopLeft(banner).dy;
+      final homeBottom = t.getBottomLeft(find.text('Home')).dy;
+      expect(
+        bannerTop,
+        greaterThan(homeBottom + 16),
+        reason: 'clear of buttons',
+      );
+      expect(t.getBottomLeft(banner).dy, closeTo(800, 1), reason: 'anchored');
+    });
+
+    phoneTest('never during play', (t) async {
+      final ts = TestServices();
+      await t.pumpWidget(wrap(ts.services, const HomeScreen()));
+      await t.tap(find.byKey(const Key('play')));
+      await settle(t);
+      expect(find.byKey(const Key('fakeBanner')), findsNothing);
+      gameState(t).pause();
+      await settle(t, 3);
+      expect(find.byKey(const Key('fakeBanner')), findsNothing);
+    });
+
+    phoneTest('no banner when unavailable (e.g. no consent)', (t) async {
+      final ts = TestServices();
+      ts.ads.bannerAvailable = false;
+      await t.pumpWidget(
+        wrap(
+          ts.services,
+          const ResultsScreen(
+            mode: GameMode.classic,
+            record: (
+              score: 10,
+              previousBest: 20,
+              best: 20,
+              newBest: false,
+              gamesPlayed: 1,
+              dailyStreak: 0,
+            ),
+            gameDuration: Duration(minutes: 1),
+            rewardedWatched: false,
+          ),
+        ),
+      );
+      await settle(t);
+      expect(find.byKey(const Key('fakeBanner')), findsNothing);
+      expect(find.text('Play again'), findsOneWidget);
+    });
+  });
+
   group('Menu sounds', () {
     phoneTest('buttons and icons tap; switches blip with on/off pitch', (
       t,

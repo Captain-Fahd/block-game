@@ -152,7 +152,7 @@ Classic placement block puzzle. Original name and visuals — no borrowing from 
   - At least 120 s since the last interstitial.
   - Skip if the game lasted under 30 s.
   - Skip if a rewarded ad was watched in the same game-over flow.
-- Banner: none at launch. (Revisit after launch on the home screen only, if retention data supports it.)
+- Banner (ADR 007): one anchored adaptive banner at the bottom of the Results screen only. Never during play.
 - No ads in the tutorial.
 
 ### Feel ("juice") — code-drawn
@@ -234,7 +234,7 @@ Save the full game state (board, tray, score, streak, RNG state, mode) on every 
 
 ### [OMAR] tasks
 
-- [ ] **P6.8** In AdMob: create the app, one interstitial unit and one rewarded unit; create the GDPR consent message (and US state regulations message) in Privacy & messaging; put the app ID and unit IDs in `apps/block_puzzle/env/prod.json` (shape in `env/example.json`). Add your phone as a test device.
+- [ ] **P6.8** In AdMob: create the app, one interstitial unit, one rewarded unit and one banner unit (ADR 007); create the GDPR consent message (and US state regulations message) in Privacy & messaging; put the app ID and unit IDs in `apps/block_puzzle/env/prod.json` (shape in `env/example.json`). Add your phone as a test device.
 - [ ] **P6.9** Download `google-services.json` from Firebase into `apps/block_puzzle/android/app/` (gitignored).
 
 **Acceptance:** on a real device with test IDs: consent form appears under EEA debug geography; interstitial respects every cap; rewarded grants the second chance only on completion; events show in DebugView; no ad ever appears during play.

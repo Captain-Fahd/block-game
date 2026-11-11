@@ -53,7 +53,7 @@ Classic placement block puzzle. Original name and visuals — no borrowing from 
   - At least 120 s since the last interstitial.
   - Skip if the game lasted under 30 s.
   - Skip if a rewarded ad was watched in the same game-over flow.
-- Banner: none at launch. (Revisit after launch on the home screen only, if retention data supports it.)
+- Banner (ADR 007): one anchored adaptive banner at the bottom of the Results screen only, its space reserved before it loads and well clear of the buttons. Never during play, in the tutorial, or on Home.
 - No ads in the tutorial.
 
 ## Feel ("juice") — code-drawn

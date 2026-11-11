@@ -157,4 +157,41 @@ void main() {
       expect(AdUnitIds.fromEnvironment().isTest, isTrue);
     });
   });
+
+  group('banner ids', () {
+    test('debug always gets the test banner', () {
+      final ids = AdUnitIds.resolve(
+        interstitial: 'ca-app-pub-1/1',
+        rewarded: 'ca-app-pub-1/2',
+        banner: 'ca-app-pub-1/3',
+        testDevices: '',
+        releaseMode: false,
+      );
+      expect(ids.banner, AdUnitIds.testBanner);
+    });
+
+    test('release uses the configured banner', () {
+      final ids = AdUnitIds.resolve(
+        interstitial: 'ca-app-pub-1/1',
+        rewarded: 'ca-app-pub-1/2',
+        banner: 'ca-app-pub-1/3',
+        testDevices: '',
+        releaseMode: true,
+      );
+      expect(ids.banner, 'ca-app-pub-1/3');
+    });
+
+    test(
+      'release with real ids but no banner id: no banner, never a test one',
+      () {
+        final ids = AdUnitIds.resolve(
+          interstitial: 'ca-app-pub-1/1',
+          rewarded: 'ca-app-pub-1/2',
+          testDevices: '',
+          releaseMode: true,
+        );
+        expect(ids.banner, isNull);
+      },
+    );
+  });
 }

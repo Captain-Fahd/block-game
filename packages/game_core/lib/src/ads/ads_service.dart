@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 import '../clock.dart';
@@ -24,6 +25,11 @@ abstract class AdsService {
 
   /// Whether a rewarded ad is loaded, so the UI can hide the offer.
   ValueListenable<bool> get isRewardedReady;
+
+  /// A full-width anchored adaptive banner. Reserves its height before the
+  /// ad loads (so nothing jumps). Empty when banners aren't available (no
+  /// consent yet, or no banner unit configured).
+  Widget buildBanner();
 
   void dispose();
 }
@@ -189,6 +195,13 @@ class AdMobAdsService implements AdsService {
   }
 
   @override
+  Widget buildBanner() {
+    final unit = ids.banner;
+    if (!_initialized || unit == null) return const SizedBox.shrink();
+    return _AdMobBanner(adUnitId: unit);
+  }
+
+  @override
   void dispose() {
     _disposed = true;
     _interstitialRetry?.cancel();
@@ -196,6 +209,70 @@ class AdMobAdsService implements AdsService {
     _interstitial?.dispose();
     _rewarded?.dispose();
     _rewardedReady.dispose();
+  }
+}
+
+class _AdMobBanner extends StatefulWidget {
+  const _AdMobBanner({required this.adUnitId});
+
+  final String adUnitId;
+
+  @override
+  State<_AdMobBanner> createState() => _AdMobBannerState();
+}
+
+class _AdMobBannerState extends State<_AdMobBanner> {
+  final _log = Logger('ads');
+  AdSize? _size;
+  BannerAd? _ad;
+  bool _loaded = false;
+  bool _started = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_started) return;
+    _started = true;
+    _load(MediaQuery.sizeOf(context).width.truncate());
+  }
+
+  Future<void> _load(int width) async {
+    final size = await AdSize.getLargeAnchoredAdaptiveBannerAdSize(width);
+    if (!mounted || size == null) return;
+    setState(() => _size = size); // reserve the space first
+    final ad = BannerAd(
+      adUnitId: widget.adUnitId,
+      size: size,
+      request: const AdRequest(),
+      listener: BannerAdListener(
+        onAdLoaded: (_) {
+          if (mounted) setState(() => _loaded = true);
+        },
+        onAdFailedToLoad: (ad, error) {
+          _log.info('banner no fill: ${error.code}');
+          ad.dispose();
+        },
+      ),
+    );
+    _ad = ad;
+    await ad.load();
+  }
+
+  @override
+  void dispose() {
+    _ad?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final size = _size;
+    if (size == null) return const SizedBox.shrink();
+    return SizedBox(
+      width: size.width.toDouble(),
+      height: size.height.toDouble(),
+      child: _loaded && _ad != null ? AdWidget(ad: _ad!) : null,
+    );
   }
 }
 
@@ -245,6 +322,14 @@ class FakeAdsService implements AdsService {
     rewardedShown++;
     return rewardEarned;
   }
+
+  /// Whether [buildBanner] returns the placeholder.
+  bool bannerAvailable = true;
+
+  @override
+  Widget buildBanner() => bannerAvailable
+      ? const SizedBox(key: Key('fakeBanner'), height: 50)
+      : const SizedBox.shrink();
 
   @override
   void dispose() => _rewardedReady.dispose();
