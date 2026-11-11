@@ -6,9 +6,9 @@ import 'package:game_core/game_core.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import 'src/app/ad_config.dart';
 import 'src/app/app.dart';
 import 'src/app/services.dart';
-import 'src/constants.dart';
 import 'src/data/progress_store.dart';
 import 'src/game/autoplay.dart';
 import 'src/game/sfx.dart';
@@ -16,12 +16,6 @@ import 'src/model/game_state.dart';
 import 'src/ui/game_screen.dart';
 
 const _kPrivacyPolicyUrl = String.fromEnvironment('PRIVACY_POLICY_URL');
-
-const kAdPolicy = AdPolicy(
-  minSecondsBetweenInterstitials: kInterstitialMinGapSeconds,
-  freeGamesAfterInstall: kFreeGamesAfterInstall,
-  minGameDuration: kMinGameDurationForInterstitial,
-);
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
