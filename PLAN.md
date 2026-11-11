@@ -224,13 +224,13 @@ Save the full game state (board, tray, score, streak, RNG state, mode) on every 
 
 ## Phase 6 — Monetisation, analytics, crash reporting
 
-- [ ] **P6.1** Wire `AdMobAdsService` with the block puzzle's `AdPolicy` from `constants.dart`.
-- [ ] **P6.2** Second-chance rewarded flow; hide the offer when no rewarded ad is ready.
-- [ ] **P6.3** Interstitial trigger on results → "Play again"/"Home" with caps.
+- [x] **P6.1** Wire `AdMobAdsService` with the block puzzle's `AdPolicy` from `constants.dart`.
+- [x] **P6.2** Second-chance rewarded flow; hide the offer when no rewarded ad is ready.
+- [x] **P6.3** Interstitial trigger on results → "Play again"/"Home" with caps.
 - [ ] **P6.4** Analytics events per P1.8 at the right points. Verify in Firebase DebugView.
 - [ ] **P6.5** Crashlytics: force a test crash in a debug-only menu, confirm it appears, then remove the trigger.
 - [ ] **P6.6** Review prompt after a new best score per P1.10 rules.
-- [ ] **P6.7** Unit tests for the "should show interstitial now?" decision across all cap rules.
+- [x] **P6.7** Unit tests for the "should show interstitial now?" decision across all cap rules.
 
 ### [OMAR] tasks
 

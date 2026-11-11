@@ -2,6 +2,33 @@
 
 Newest entries at the top. One entry per session: what got done, what's next, blockers.
 
+## 2026-11-11 (Phase 6, part 1: ads)
+
+### Done
+- **Sound rework (before Phase 6):** Omar found the in-game sounds inconsistent and the line clear piercing. All sounds now share one soft mallet voice on C major pentatonic notes, peak-normalised; the clear is a warm low-mid strum, and streak pitch steps up musical intervals (max 1.5x; top frequency about 1.6 kHz instead of about 2.8 kHz). Omar: "sounds good". Also: subtle menu sounds via a `game_core` `UiSounds` hook, and no music at all (ADR 006).
+- **P6.1:** `AdMobAdsService` wired with the block puzzle's `AdPolicy`. SDK initialised only after UMP consent.
+  - Ad units: Google's sample units except in release builds with `env/prod.json`.
+  - AdMob app id: a manifest placeholder, the sample id in debug/profile and `ADMOB_APP_ID` in release. Checked with aapt2 on debug, release-with-id and release-without-id APKs.
+  - `UMP_DEBUG_EEA` dart-define for testing the consent form.
+- **P6.2:** rewarded second chance. On Omar's phone: offered at game over when an ad is ready; the test ad played to the end; reward earned; game continued with a tray that fits.
+- **P6.3:** interstitial on leaving Results (Play again / Home) with every cap: first 2 games free, 120 s gap (now persisted across restarts), not after games under 30 s, not after a rewarded ad in the same flow; logs `ad_interstitial_shown` with its trigger. On the phone: shown after Play again when eligible.
+- **Banner (ADR 007, Omar's request):** one anchored adaptive banner at the bottom of Results only, its height reserved before it loads, clear of the buttons. Release builds show no banner without `ADMOB_BANNER_ID`. Checked on the phone.
+- **P6.6 (code and tests, not ticked):** `ReviewPrompter` asks after a new best, never in the first session, at most every 30 days; no interstitial in that flow. Not checkable on a device until the app is installed from Play (internal testing, P9.2).
+- **P6.7:** app-level tests for every interstitial cap, the trigger name, review rules and banner placement (`decideInterstitial` was already unit tested in `game_core`).
+- **Build fix and CI:** one commit broke the Android Gradle build (Kotlin DSL resolved `java.util` against Gradle's `java` extension) while CI stayed green. Fixed, and CI now has a `build-android` job that builds a debug APK.
+- Debug/profile `AUTOPLAY_FLOW`: the bot stops at game over so the real ad flow runs on a device.
+
+### Measured
+- Tests: 187 block puzzle, 34 game_core, all passing; analyzer clean; Android debug and release builds compile.
+
+### Notes
+- The emulator overloaded (load average about 14, system services restarted) during a long run, so the ad checks moved to Omar's phone. Long waits now run in the background instead of blocking.
+- The app was once removed from recents and reopened mid-test; logs show no crash.
+
+### Next
+- P2.0: propose 8 names.
+- Blocked on Omar: P0.6 Play Console, P0.7 AdMob account, P6.8 AdMob app + **three** units (interstitial, rewarded, banner) + GDPR/US consent messages, P0.8/P6.9 Firebase + `google-services.json` (for P6.4 analytics and P6.5 Crashlytics).
+
 ## 2026-11-11 (Phase 5)
 
 ### Done
