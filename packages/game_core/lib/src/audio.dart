@@ -19,6 +19,11 @@ abstract class AudioService<S extends Enum> {
 
 /// `flame_audio` implementation. [files] maps each id to a file under
 /// `assets/audio/`. Respects the [sound] and [music] settings.
+///
+/// Each effect gets [voicesPerSound] low-latency players created once in
+/// [preload] and reused round-robin. (`FlameAudio.play` creates and loads a
+/// new player for every call and never disposes it, which caused frame
+/// spikes and a slow build-up of players on device.)
 class FlameAudioService<S extends Enum> implements AudioService<S> {
   FlameAudioService({
     required this.files,
@@ -26,6 +31,7 @@ class FlameAudioService<S extends Enum> implements AudioService<S> {
     required this.music,
     this.musicFile,
     this.musicVolume = 0.4,
+    this.voicesPerSound = 3,
   }) {
     music.addListener(_onMusicSetting);
   }
@@ -35,27 +41,57 @@ class FlameAudioService<S extends Enum> implements AudioService<S> {
   final ValueNotifier<bool> music;
   final String? musicFile;
   final double musicVolume;
+  final int voicesPerSound;
   final _log = Logger('audio');
+  final Map<S, List<AudioPlayer>> _voices = {};
+  final Map<S, int> _next = {};
   bool _musicWanted = false;
   bool _backgrounded = false;
+
+  /// Sound effects mix with whatever else is playing (e.g. the player's own
+  /// music) instead of taking audio focus.
+  static final AudioContext _sfxContext = AudioContextConfig(
+    focus: AudioContextConfigFocus.mixWithOthers,
+  ).build();
 
   @override
   Future<void> preload() async {
     try {
-      await FlameAudio.audioCache.loadAll([...files.values, ?musicFile]);
+      if (musicFile != null) await FlameAudio.audioCache.load(musicFile!);
     } on Object catch (e) {
-      _log.warning('preload failed', e);
+      _log.warning('music preload failed', e);
+    }
+    for (final e in files.entries) {
+      try {
+        final voices = <AudioPlayer>[];
+        for (var i = 0; i < voicesPerSound; i++) {
+          final p = AudioPlayer()..audioCache = FlameAudio.audioCache;
+          await p.setAudioContext(_sfxContext);
+          await p.setReleaseMode(ReleaseMode.stop);
+          await p.setPlayerMode(PlayerMode.lowLatency);
+          await p.setSource(AssetSource(e.value));
+          voices.add(p);
+        }
+        _voices[e.key] = voices;
+      } on Object catch (err) {
+        _log.warning('preload ${e.key} failed', err);
+      }
     }
   }
 
   @override
   Future<void> play(S sfx, {double volume = 1, double rate = 1}) async {
     if (!sound.value || _backgrounded) return;
-    final file = files[sfx];
-    if (file == null) return;
+    final voices = _voices[sfx];
+    if (voices == null || voices.isEmpty) return;
+    final i = _next[sfx] ?? 0;
+    _next[sfx] = (i + 1) % voices.length;
+    final p = voices[i];
     try {
-      final player = await FlameAudio.play(file, volume: volume);
-      if (rate != 1) await player.setPlaybackRate(rate);
+      await p.stop();
+      await p.setVolume(volume);
+      await p.setPlaybackRate(rate);
+      await p.resume();
     } on Object catch (e) {
       _log.warning('play $sfx failed', e);
     }
@@ -102,6 +138,12 @@ class FlameAudioService<S extends Enum> implements AudioService<S> {
   @override
   Future<void> dispose() async {
     music.removeListener(_onMusicSetting);
+    for (final voices in _voices.values) {
+      for (final p in voices) {
+        await p.dispose();
+      }
+    }
+    _voices.clear();
     await FlameAudio.bgm.stop();
   }
 }
