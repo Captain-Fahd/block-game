@@ -4,6 +4,25 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+// AdMob app id for the manifest. Debug/profile builds always use Google's
+// sample id; release builds use ADMOB_APP_ID from
+// --dart-define-from-file=env/prod.json when it's set (CLAUDE.md: real ids
+// only in release). Flutter passes dart-defines to Gradle base64-encoded.
+val sampleAdMobAppId = "ca-app-pub-3940256099942544~3347511713"
+val dartDefines: Map<String, String> =
+    (project.findProperty("dart-defines") as String?)
+        ?.split(",")
+        ?.mapNotNull { encoded ->
+            runCatching { String(java.util.Base64.getDecoder().decode(encoded)) }.getOrNull()
+        }
+        ?.mapNotNull { kv ->
+            val i = kv.indexOf('=')
+            if (i > 0) kv.substring(0, i) to kv.substring(i + 1) else null
+        }
+        ?.toMap()
+        ?: emptyMap()
+val releaseAdMobAppId = dartDefines["ADMOB_APP_ID"]?.takeIf { it.isNotBlank() } ?: sampleAdMobAppId
+
 android {
     namespace = "com.omarfahd.blockpuzzle"
     compileSdk = flutter.compileSdkVersion
@@ -27,11 +46,13 @@ android {
         // flag during build.
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        manifestPlaceholders["admobAppId"] = sampleAdMobAppId
     }
 
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
+            manifestPlaceholders["admobAppId"] = releaseAdMobAppId
+            // TODO(P7.4): upload-key signing config from key.properties.
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.getByName("debug")
         }

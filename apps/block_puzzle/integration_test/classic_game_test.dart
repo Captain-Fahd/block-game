@@ -72,6 +72,7 @@ void main() {
       consent: FakeConsentService(),
       ads: FakeAdsService(policy: kAdPolicy, rewardedReady: false),
       analytics: analytics,
+      review: ReviewPrompter(store: store, requester: FakeReviewRequester()),
       version: 'test',
       newSeed: () => 20261111,
     );

@@ -8,6 +8,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import 'src/app/ad_config.dart';
 import 'src/app/app.dart';
+import 'src/constants.dart';
 import 'src/app/services.dart';
 import 'src/data/progress_store.dart';
 import 'src/game/autoplay.dart';
@@ -33,11 +34,25 @@ Future<void> main() async {
   unawaited(audio.preload());
   final info = await PackageInfo.fromPlatform();
 
+  // Ad unit ids: Google's sample ids unless this is a release build with
+  // ids from --dart-define-from-file=env/prod.json.
   final ids = AdUnitIds.fromEnvironment();
-  final consent = UmpConsentService(testDeviceIds: ids.testDeviceIds);
-  // Phase 6 (P6.1) swaps in AdMobAdsService. Until then no rewarded ad is
-  // ever ready, so the second-chance offer stays hidden, per the spec.
-  final ads = FakeAdsService(policy: kAdPolicy, rewardedReady: false);
+  final consent = UmpConsentService(
+    debugGeographyEea: const bool.fromEnvironment('UMP_DEBUG_EEA'),
+    testDeviceIds: ids.testDeviceIds,
+  );
+  final ads = AdMobAdsService(
+    consent: consent,
+    policy: kAdPolicy,
+    ids: ids,
+    store: store,
+  );
+  final review = ReviewPrompter(
+    store: store,
+    requester: InAppReviewRequester(),
+    minDaysBetween: kReviewMinDaysBetween,
+  );
+  unawaited(review.onSessionStart());
 
   final services = AppServices(
     store: store,
@@ -48,6 +63,7 @@ Future<void> main() async {
     consent: consent,
     ads: ads,
     analytics: const NoopAnalytics(), // Firebase in P6.4
+    review: review,
     privacyPolicyUrl: _kPrivacyPolicyUrl,
     version: '${info.version} (${info.buildNumber})',
     openUrl: (uri) => launchUrl(uri, mode: LaunchMode.externalApplication),

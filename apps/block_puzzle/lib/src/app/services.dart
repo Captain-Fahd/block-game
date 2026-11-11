@@ -17,6 +17,7 @@ class AppServices {
     required this.consent,
     required this.ads,
     required this.analytics,
+    required this.review,
     this.clock = systemClock,
     this.privacyPolicyUrl = '',
     this.version = '',
@@ -32,6 +33,7 @@ class AppServices {
   final ConsentService consent;
   final AdsService ads;
   final Analytics analytics;
+  final ReviewPrompter review;
   final Clock clock;
 
   /// Empty until Omar's site is live; Settings hides the link then.

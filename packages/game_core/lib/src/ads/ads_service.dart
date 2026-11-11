@@ -6,6 +6,7 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import '../clock.dart';
 import '../consent.dart';
 import '../logger.dart';
+import '../storage.dart';
 import 'ad_ids.dart';
 import 'ad_policy.dart';
 
@@ -34,7 +35,13 @@ class AdMobAdsService implements AdsService {
     required this.ids,
     this.clock = systemClock,
     this.retryDelay = const Duration(seconds: 30),
+    this.store,
   });
+
+  /// Optional: persists the last interstitial time so the minimum gap holds
+  /// across app restarts.
+  final KeyValueStore? store;
+  static const _kLastInterstitial = 'ads.lastInterstitialMs';
 
   final ConsentService consent;
   final AdPolicy policy;
@@ -54,6 +61,13 @@ class AdMobAdsService implements AdsService {
 
   @override
   ValueListenable<bool> get isRewardedReady => _rewardedReady;
+
+  /// Last interstitial shown, this session or (with [store]) a previous one.
+  DateTime? get lastInterstitialAt {
+    if (_lastInterstitialAt != null) return _lastInterstitialAt;
+    final ms = store?.getInt(_kLastInterstitial);
+    return ms == null ? null : DateTime.fromMillisecondsSinceEpoch(ms);
+  }
 
   @override
   Future<void> initialize() async {
@@ -117,7 +131,7 @@ class AdMobAdsService implements AdsService {
       policy: policy,
       trigger: trigger,
       now: clock(),
-      lastShownAt: _lastInterstitialAt,
+      lastShownAt: lastInterstitialAt,
     );
     if (decision != InterstitialDecision.show) {
       _log.debug('interstitial ${trigger.name}: ${decision.name}');
@@ -129,7 +143,11 @@ class AdMobAdsService implements AdsService {
 
     final done = Completer<bool>();
     ad.fullScreenContentCallback = FullScreenContentCallback(
-      onAdShowedFullScreenContent: (_) => _lastInterstitialAt = clock(),
+      onAdShowedFullScreenContent: (_) {
+        final now = clock();
+        _lastInterstitialAt = now;
+        store?.setInt(_kLastInterstitial, now.millisecondsSinceEpoch);
+      },
       onAdDismissedFullScreenContent: (ad) {
         ad.dispose();
         if (!done.isCompleted) done.complete(true);

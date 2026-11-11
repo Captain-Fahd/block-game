@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:game_core/game_core.dart';
 
@@ -6,10 +8,14 @@ import '../data/progress_store.dart';
 import '../model/game_state.dart';
 import 'game_screen.dart';
 
-/// Score, best, and "Play again" / "Home". (Phase 6 adds the capped
-/// interstitial on both buttons; [gameDuration] and [rewardedWatched] are
-/// kept for that.)
-class ResultsScreen extends StatelessWidget {
+/// Score, best, and "Play again" / "Home".
+///
+/// - A new best may trigger the store review prompt (P6.6; the prompter
+///   decides: never in the first session, at most once per 30 days).
+/// - Leaving via either button tries a capped interstitial first (P6.3),
+///   unless a rewarded ad was watched or the review prompt was shown in
+///   this game-over flow. Ads never show during play.
+class ResultsScreen extends StatefulWidget {
   const ResultsScreen({
     super.key,
     required this.mode,
@@ -24,10 +30,66 @@ class ResultsScreen extends StatelessWidget {
   final bool rewardedWatched;
 
   @override
+  State<ResultsScreen> createState() => _ResultsScreenState();
+}
+
+class _ResultsScreenState extends State<ResultsScreen> {
+  late final AppServices _s = ServicesScope.of(context);
+  bool _reviewAsked = false;
+  bool _busy = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_started) return;
+    _started = true;
+    if (widget.record.newBest) unawaited(_maybeAskReview());
+  }
+
+  bool _started = false;
+
+  Future<void> _maybeAskReview() async {
+    final asked = await _s.review.maybeAsk();
+    if (asked && mounted) setState(() => _reviewAsked = true);
+  }
+
+  Future<void> _leave({required bool playAgain}) async {
+    if (_busy) return;
+    setState(() => _busy = true);
+    final name = playAgain ? 'results_play_again' : 'results_home';
+    if (!_reviewAsked) {
+      final shown = await _s.ads.maybeShowInterstitial(
+        InterstitialTrigger(
+          name: name,
+          completedGames: _s.progress.gamesPlayed,
+          gameDuration: widget.gameDuration,
+          rewardedWatchedThisFlow: widget.rewardedWatched,
+        ),
+      );
+      if (shown) {
+        _s.analytics.logEvent(AnalyticsEvents.adInterstitialShown, {
+          'trigger': name,
+        });
+      }
+    }
+    if (!mounted) return;
+    final nav = Navigator.of(context);
+    if (playAgain) {
+      await nav.pushReplacement(
+        MaterialPageRoute<void>(
+          builder: (_) => GameScreen.newGame(_s, widget.mode),
+        ),
+      );
+    } else {
+      nav.pop();
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final s = ServicesScope.of(context);
     final theme = Theme.of(context);
-    final daily = mode == GameMode.daily;
+    final record = widget.record;
+    final daily = widget.mode == GameMode.daily;
     return Scaffold(
       body: SafeArea(
         child: Center(
@@ -70,18 +132,14 @@ class ResultsScreen extends StatelessWidget {
                   GameButton(
                     label: 'Play again',
                     icon: Icons.replay_rounded,
-                    onPressed: () => Navigator.of(context).pushReplacement(
-                      MaterialPageRoute<void>(
-                        builder: (_) => GameScreen.newGame(s, mode),
-                      ),
-                    ),
+                    onPressed: _busy ? null : () => _leave(playAgain: true),
                   ),
                   const SizedBox(height: GameSpacing.md),
                   GameButton(
                     label: 'Home',
                     icon: Icons.home_rounded,
                     style: GameButtonStyle.secondary,
-                    onPressed: () => Navigator.of(context).pop(),
+                    onPressed: _busy ? null : () => _leave(playAgain: false),
                   ),
                 ],
               ),

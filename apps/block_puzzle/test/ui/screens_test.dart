@@ -1,5 +1,6 @@
 import 'package:block_puzzle/src/app/app.dart';
 import 'package:block_puzzle/src/constants.dart';
+import 'package:block_puzzle/src/data/progress_store.dart';
 import 'package:block_puzzle/src/game/block_game.dart';
 import 'package:block_puzzle/src/game/sfx.dart';
 import 'package:block_puzzle/src/model/daily_seed.dart';
@@ -347,6 +348,127 @@ void main() {
         expect(find.byType(HomeScreen), findsOneWidget);
       },
     );
+  });
+
+  group('Interstitial and review on Results (P6.3, P6.6, P6.7)', () {
+    GameEndRecord rec({bool newBest = false}) => (
+      score: 50,
+      previousBest: newBest ? 40 : 60,
+      best: newBest ? 50 : 60,
+      newBest: newBest,
+      gamesPlayed: 0,
+      dailyStreak: 0,
+    );
+
+    Future<void> openResults(
+      WidgetTester t,
+      TestServices ts, {
+      Duration duration = const Duration(minutes: 2),
+      bool rewardedWatched = false,
+      bool newBest = false,
+    }) async {
+      await t.pumpWidget(wrap(ts.services, const HomeScreen()));
+      t
+          .state<NavigatorState>(find.byType(Navigator))
+          .push(
+            MaterialPageRoute<void>(
+              builder: (_) => ResultsScreen(
+                mode: GameMode.classic,
+                record: rec(newBest: newBest),
+                gameDuration: duration,
+                rewardedWatched: rewardedWatched,
+              ),
+            ),
+          );
+      await settle(t);
+    }
+
+    Future<void> leaveHome(WidgetTester t) async {
+      await t.tap(find.text('Home'));
+      await settle(t);
+    }
+
+    phoneTest('never in the first 2 games of an install', (t) async {
+      final ts = TestServices();
+      ts.store.values['stats.gamesPlayed'] = 2;
+      await openResults(t, ts);
+      await leaveHome(t);
+      expect(ts.ads.interstitialsShown, isEmpty);
+    });
+
+    phoneTest('shown from game 3 on, logged with its trigger', (t) async {
+      final ts = TestServices();
+      ts.store.values['stats.gamesPlayed'] = 3;
+      await openResults(t, ts);
+      await t.tap(find.text('Play again'));
+      await settle(t);
+      expect(ts.ads.interstitialsShown, ['results_play_again']);
+      final e = ts.analytics.events.lastWhere(
+        (e) => e.$1 == AnalyticsEvents.adInterstitialShown,
+      );
+      expect(e.$2['trigger'], 'results_play_again');
+      expect(find.byType(GameScreen), findsOneWidget);
+    });
+
+    phoneTest('skipped after a game under 30 s', (t) async {
+      final ts = TestServices();
+      ts.store.values['stats.gamesPlayed'] = 5;
+      await openResults(t, ts, duration: const Duration(seconds: 29));
+      await leaveHome(t);
+      expect(ts.ads.interstitialsShown, isEmpty);
+    });
+
+    phoneTest('skipped after a rewarded ad in the same flow', (t) async {
+      final ts = TestServices();
+      ts.store.values['stats.gamesPlayed'] = 5;
+      await openResults(t, ts, rewardedWatched: true);
+      await leaveHome(t);
+      expect(ts.ads.interstitialsShown, isEmpty);
+    });
+
+    phoneTest('at least 120 s apart', (t) async {
+      final ts = TestServices();
+      ts.store.values['stats.gamesPlayed'] = 5;
+      await openResults(t, ts);
+      await leaveHome(t);
+      expect(ts.ads.interstitialsShown, hasLength(1));
+
+      ts.now = ts.now.add(const Duration(seconds: 119));
+      await openResults(t, ts);
+      await leaveHome(t);
+      expect(ts.ads.interstitialsShown, hasLength(1));
+
+      ts.now = ts.now.add(const Duration(seconds: 2));
+      await openResults(t, ts);
+      await leaveHome(t);
+      expect(ts.ads.interstitialsShown, hasLength(2));
+    });
+
+    phoneTest(
+      'new best after the first session asks for a review, and then no interstitial',
+      (t) async {
+        final ts = TestServices();
+        ts.store.values['stats.gamesPlayed'] = 5;
+        ts.store.values['review.sessions'] = 2;
+        await openResults(t, ts, newBest: true);
+        expect(ts.reviewRequester.requests, 1);
+        await leaveHome(t);
+        expect(ts.ads.interstitialsShown, isEmpty);
+      },
+    );
+
+    phoneTest('no review in the first session or without a new best', (
+      t,
+    ) async {
+      final ts = TestServices();
+      ts.store.values['review.sessions'] = 1;
+      await openResults(t, ts, newBest: true);
+      expect(ts.reviewRequester.requests, 0);
+
+      ts.store.values['review.sessions'] = 3;
+      await openResults(t, ts);
+      expect(ts.reviewRequester.requests, 0);
+    });
   });
 
   group('Menu sounds', () {

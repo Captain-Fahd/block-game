@@ -201,6 +201,11 @@ const int kInterstitialMinGapSeconds = 120;
 const int kFreeGamesAfterInstall = 2;
 const Duration kMinGameDurationForInterstitial = Duration(seconds: 30);
 
+// --- Review prompt -------------------------------------------------------
+/// Ask for a store review at most once per this many days, only after a new
+/// best score, never in the first session.
+const int kReviewMinDaysBetween = 30;
+
 // --- Menu sounds -------------------------------------------------------------
 /// Menu sounds sit well under the gameplay sounds.
 const double kUiTapVolume = 0.35;

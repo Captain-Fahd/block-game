@@ -42,6 +42,11 @@ class TestServices {
       consent: consent,
       ads: ads,
       analytics: analytics,
+      review: ReviewPrompter(
+        store: store,
+        requester: reviewRequester,
+        clock: () => this.now,
+      ),
       clock: () => this.now,
       privacyPolicyUrl: privacyPolicyUrl,
       version: '0.1.0 (1)',
@@ -59,6 +64,7 @@ class TestServices {
   final audio = FakeAudioService<Sfx>();
   final haptics = FakeHaptics();
   final analytics = RecordingAnalytics();
+  final reviewRequester = FakeReviewRequester();
   final opened = <Uri>[];
   late final FakeConsentService consent;
   late final FakeAdsService ads;

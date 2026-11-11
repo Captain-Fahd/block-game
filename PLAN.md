@@ -80,7 +80,7 @@ Everything here is reused by every game. Each service sits behind an abstract in
 - [x] **P1.1 Logger.** Thin wrapper (levels, tag). No output in release except errors, which go to Crashlytics.
 - [x] **P1.2 Storage.** `KeyValueStore` interface over `shared_preferences`; typed helpers for int/bool/string/JSON; in-memory fake.
 - [x] **P1.3 Settings.** Sound, music, haptics, colour-blind patterns; persisted; exposed as `ValueNotifier`s.
-- [ ] **P1.4 Audio.** `flame_audio` wrapper: preload SFX, play by enum id, respects settings, ducks when the app pauses.
+- [x] **P1.4 Audio.** `flame_audio` wrapper: preload SFX, play by enum id, respects settings, ducks when the app pauses.
 - [ ] **P1.5 Haptics.** Light/medium/success patterns via `HapticFeedback`; respects settings.
 - [x] **P1.6 Consent.** UMP flow via `google_mobile_ads`'s `ConsentInformation`/`ConsentForm`: request info update on every launch, show form if required, expose `canRequestAds` and `privacyOptionsRequired`, and provide `showPrivacyOptionsForm()`. Debug builds support UMP debug geography (EEA) for testing.
 - [x] **P1.7 Ads service.** `AdsService` interface with `AdMobAdsService` and `FakeAdsService`.
